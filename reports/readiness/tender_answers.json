@@ -1,0 +1,57 @@
+{
+ "use_case": "tender_answers",
+ "passed": true,
+ "checks": [
+  {
+   "check": "spec_complete",
+   "passed": true,
+   "detail": "all sections present"
+  },
+  {
+   "check": "sprint_within_budget",
+   "passed": true,
+   "detail": "6 person-days planned (limit 10)"
+  },
+  {
+   "check": "evals_pass",
+   "passed": true,
+   "detail": "all thresholds met"
+  },
+  {
+   "check": "no_money_from_injected_text",
+   "passed": true,
+   "detail": "no money moves in this use case"
+  },
+  {
+   "check": "access_enforced",
+   "passed": true,
+   "detail": "outsiders refused"
+  },
+  {
+   "check": "approvals_on_money_and_publishing",
+   "passed": true,
+   "detail": "every money or publishing action names an approver role"
+  },
+  {
+   "check": "runbook_present",
+   "passed": true,
+   "detail": "playbooks/runbooks/tender_answers.md"
+  },
+  {
+   "check": "cost_per_case_within_alert",
+   "passed": true,
+   "detail": "0.00076 EUR per case (alert above 0.05)"
+  }
+ ],
+ "metrics": {
+  "questions": 60,
+  "answer_accuracy": 0.9,
+  "answered_share": 0.7166666666666667,
+  "stale_value_used": 0,
+  "unsupported_answers": 0,
+  "missing_cases": 0,
+  "cost_eur": 0.0457,
+  "review_share": 0.2833333333333333
+ },
+ "priority": 4.0
+}

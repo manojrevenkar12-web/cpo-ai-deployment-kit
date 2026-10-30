@@ -1,0 +1,20 @@
+{
+ "passed": true,
+ "checks": [
+  {
+   "id": "all-use-cases-ready",
+   "passed": true,
+   "detail": "all ready"
+  },
+  {
+   "id": "no-money-moved-wrongly",
+   "passed": true,
+   "detail": "0.00 EUR above the right amounts"
+  },
+  {
+   "id": "measurement-covers-truth",
+   "passed": true,
+   "detail": "every reported interval contains the truth"
+  }
+ ]
+}

@@ -1,0 +1,102 @@
+{
+ "cdr_disputes": {
+  "usage_share_live": 0.6725352112676056,
+  "naive_log": -1.0429757797674877,
+  "baseline_minutes_median": 42.150000000000006,
+  "rollout": {
+   "att_log": -0.633550947603783,
+   "ci_log": [
+    -0.7756348838719896,
+    -0.49146701133557646
+   ],
+   "pre_cases": 112,
+   "post_cases": 284,
+   "method": "interrupted time series (no control group)",
+   "pct": -0.46929605075763714,
+   "ci_pct": [
+    -0.5395886195713303,
+    -0.3882716767791208
+   ]
+  },
+  "per_use_log": -0.942033869735468,
+  "minutes_per_case": -21.181099094567397,
+  "hours_saved": 100.3,
+  "hours_saved_ci": [
+   64.6,
+   135.9
+  ],
+  "value_eur": 5514.0
+ },
+ "driver_refunds": {
+  "usage_share_live": 0.3773416592328278,
+  "naive_log": -0.7991774764255823,
+  "baseline_minutes_median": 19.0,
+  "rollout": {
+   "att_log": -0.22047170322525964,
+   "cells": 12,
+   "cases": 536,
+   "event_time": {
+    "0": -0.2992877350855008,
+    "1": -0.16489737957179867,
+    "2": -0.11762861634834725,
+    "3": -0.19487717731807863,
+    "4": -0.5395845709110919,
+    "5": -0.017933616305295736,
+    "6": -0.25962090536858995,
+    "7": -0.1329766284398246
+   },
+   "ci_log": [
+    -0.3815250016678614,
+    -0.06728629908036281
+   ],
+   "method": "staggered difference-in-differences",
+   "pct": -0.1978596634750941,
+   "ci_pct": [
+    -0.31718068577701997,
+    -0.06507250586533442
+   ]
+  },
+  "per_use_log": -0.5842760740319529,
+  "minutes_per_case": -5.605649312000818,
+  "hours_saved": 104.7,
+  "hours_saved_ci": [
+   28.7,
+   182.7
+  ],
+  "value_eur": 5760.0
+ },
+ "site_onboarding": {
+  "usage_share_live": 0.4791666666666667,
+  "naive_log": -1.5774283646232794,
+  "baseline_minutes_median": 36.95,
+  "rollout": {
+   "att_log": -0.598207275312117,
+   "ci_log": [
+    -0.9008213133832172,
+    -0.2955932372410169
+   ],
+   "pre_cases": 24,
+   "post_cases": 96,
+   "method": "interrupted time series (no control group)",
+   "pct": -0.4502036133073333,
+   "ci_pct": [
+    -0.5937641242727543,
+    -0.25590996541313327
+   ]
+  },
+  "per_use_log": -1.248432574564418,
+  "minutes_per_case": -13.451041666666683,
+  "hours_saved": 21.5,
+  "hours_saved_ci": [
+   -3.6,
+   46.6
+  ],
+  "value_eur": 1184.0
+ },
+ "tender_answers": {
+  "usage_share_live": 0.6285714285714286,
+  "naive_log": -0.7608179839980074,
+  "baseline_minutes_median": null,
+  "note": "no cases before launch: the effect on handling time cannot be measured"
+ }
+}

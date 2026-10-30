@@ -1,0 +1,15 @@
+# How adoption and impact are measured. Assumptions are named here so a reader can change them.
+
+loaded_cost_eur_per_hour: 55      # assumption: salary, overheads and workplace per productive hour
+handling_time:
+  source: crm worklog minutes per case
+  winsorize_quantile: 0.98        # tickets left open over a break inflate minutes; cap them
+  log_scale: true
+impact:
+  method: staggered difference-in-differences    # Callaway & Sant'Anna style, not-yet-treated controls
+  min_pre_weeks: 2
+  bootstrap: {samples: 400, unit: country, seed: 7}
+  single_team: interrupted time series           # no control group: before/after, reported with its caveat
+adoption:
+  active_user_min_uses_per_week: 1
+  windows_weeks: 4

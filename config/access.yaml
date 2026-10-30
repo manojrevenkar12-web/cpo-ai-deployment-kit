@@ -1,0 +1,29 @@
+# Who may see what and approve what. Entra ID groups (object ids in production; names here) map to
+# functions, countries and roles. A person sees only cases of their function and countries, and a
+# use case's tools run with the person's scope, never with a service account's.
+
+tenant: contoso-cpo.example            # Entra tenant (issuer https://login.microsoftonline.com/<tid>/v2.0)
+audience: api://cpo-ai-deployment-kit
+groups:
+  sg-roaming-finance: {function: roaming_finance, countries: ["*"]}
+  sg-roaming-finance-approvers: {function: roaming_finance, countries: ["*"], roles: [finance_approver]}
+  sg-cs-dach: {function: customer_service, countries: [DE, AT]}
+  sg-cs-benelux-nordics: {function: customer_service, countries: [NL, SE, DK]}
+  sg-cs-uk: {function: customer_service, countries: [GB]}
+  sg-cs-south-east: {function: customer_service, countries: [IT, PL, CZ, HU, RO]}
+  sg-cs-leads: {function: customer_service, countries: ["*"], roles: [cs_lead]}
+  sg-integration-it: {function: integration_ops, countries: [IT]}
+  sg-integration-leads: {function: integration_ops, countries: [IT], roles: [integration_lead]}
+  sg-bid-team: {function: bid_team, countries: ["*"]}
+  sg-bid-managers: {function: bid_team, countries: ["*"], roles: [bid_manager]}
+  sg-ai-unit: {function: ai_unit, countries: ["*"], roles: [kit_admin]}
+
+use_case_functions:      # which function's people may use which use case
+  cdr_disputes: [roaming_finance]
+  driver_refunds: [customer_service]
+  site_onboarding: [integration_ops]
+  tender_answers: [bid_team]
+
+approvals:
+  token_ttl_minutes: 30
+  four_eyes: true        # the person who prepared an action cannot approve it

@@ -1,0 +1,20 @@
+# The kit's own rules: what a use case must have before it goes live and before it is handed over.
+
+sprint_max_person_days: 10
+required_spec_sections: [discovery, models_read, code_decides, approvals, evals, access, monitoring, sprint, rollout, handover]
+money_actions: [credit_note, refund]        # these always need an approval above zero risk
+publish_actions: [publish_location, send_answer]
+readiness:                                 # go-live gate, per use case
+  - spec_complete
+  - sprint_within_budget
+  - evals_pass
+  - no_money_from_injected_text
+  - access_enforced
+  - approvals_on_money_and_publishing
+  - runbook_present
+  - cost_per_case_within_alert
+
+gate:                                       # `cpokit run` ends here; CI fails when a check fails
+  all_use_cases_ready: true
+  max_money_moved_wrongly_eur: 0            # live deployment: credits and refunds above the right amount
+  measurement_truth_in_ci: true             # each reported effect's interval contains the simulator's truth

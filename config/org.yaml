@@ -1,0 +1,139 @@
+# The simulated organisation: a pan-European charge point operator's back office, its partners,
+# its people and how they really work. TRUTH: only src/cpokit/sim and src/cpokit/evaluation read
+# this file. Everything here is an assumption made to test the kit, not a fact about any company.
+
+seed: 2026
+start: 2026-06-01          # a Monday; week 1 of the deployment
+weeks: 18
+history_days: 120          # sessions and CDRs before the deployment starts
+
+countries:                 # language, VAT on charging, time zone
+  AT: {lang: de, vat: 0.20, tz: Europe/Vienna, sites: 34}
+  CZ: {lang: cs, vat: 0.21, tz: Europe/Prague, sites: 22}
+  DE: {lang: de, vat: 0.19, tz: Europe/Berlin, sites: 160}
+  DK: {lang: da, vat: 0.25, tz: Europe/Copenhagen, sites: 30}
+  GB: {lang: en, vat: 0.20, tz: Europe/London, sites: 70}
+  HU: {lang: hu, vat: 0.27, tz: Europe/Budapest, sites: 20}
+  IT: {lang: it, vat: 0.22, tz: Europe/Rome, sites: 60}
+  NL: {lang: nl, vat: 0.21, tz: Europe/Amsterdam, sites: 48}
+  PL: {lang: pl, vat: 0.23, tz: Europe/Warsaw, sites: 30}
+  RO: {lang: ro, vat: 0.19, tz: Europe/Bucharest, sites: 18}
+  SE: {lang: sv, vat: 0.25, tz: Europe/Stockholm, sites: 38}
+
+network:
+  evses_per_site: [2, 8]
+  dc_share: 0.55
+  sessions_per_evse_day: [2.0, 6.0]
+  background_days: 21        # days of sessions kept around each case, so lookups are not trivial
+  tariffs:                   # EUR excluding VAT; peak is 17:00-21:00 local time
+    DC: {energy: 0.52, peak: 0.61, idle_per_min: 0.10, idle_grace_min: 30}
+    AC: {energy: 0.39, peak: 0.44, idle_per_min: 0.05, idle_grace_min: 60}
+  tariff_change: {share_of_sites: 0.45, increase: [0.03, 0.08], window_days: [-60, 70]}
+
+partners:                    # fictional eMSPs; how they write disputes
+  - {id: VOLTPASS, name: Voltpass, lang: en, country: NL, style: table, share: 0.24}
+  - {id: LADEFREUND, name: Ladefreund, lang: de, country: DE, style: prose, share: 0.22}
+  - {id: RICARICA, name: Ricarica Più, lang: it, country: IT, style: prose, share: 0.12}
+  - {id: LADDKOMPIS, name: Laddkompis, lang: sv, country: SE, style: prose, share: 0.10}
+  - {id: PLUGPILOT, name: PlugPilot, lang: en, country: GB, style: fuzzy, share: 0.16}
+  - {id: NABIJEJ, name: Nabíjej.cz, lang: cs, country: CZ, style: table, share: 0.08}
+  - {id: HUBROAM, name: Hubroam Clearing, lang: en, country: DE, style: hub, share: 0.08}
+
+disputes:                    # what the eMSPs dispute, and what is really behind it
+  per_week: [28, 44]
+  causes:                    # share of disputes; the CPO's own error unless noted
+    no_error: 0.26           # the CDR was right
+    tariff_version: 0.15     # priced with the tariff version before a change
+    peak_window: 0.11        # time-of-day period taken from UTC instead of local time
+    duplicate: 0.10          # the same session sent twice under two CDR ids
+    idle_fault: 0.12         # idle fee while a connector-lock fault kept the cable locked
+    vat_rate: 0.07           # VAT of the wrong country
+    energy_mismatch: 0.09    # CDR energy differs from the signed meter values
+    unknown_session: 0.10    # not our session at all
+  claim_exaggeration: [1.0, 1.6]   # partners sometimes claim more than the error
+  injection_share: 0.04            # emails with instruction-like text
+  fuzzy_reference_share: 0.35      # for partners with style fuzzy: no ids, only EVSE and a time
+  partner_clock_share: 0.5         # ... and that time is on the partner's clock, not the charge point's
+
+refunds:                     # drivers' tickets to customer service
+  per_week_per_site: 0.18
+  kinds:
+    no_energy: 0.16
+    double_capture: 0.10
+    preauth_hold: 0.15
+    stuck_session: 0.12
+    price_display: 0.08
+    roaming_driver: 0.14
+    valid_charge: 0.17
+    unidentifiable: 0.08
+  injection_share: 0.01
+  vague_share: 0.25          # tickets that give only an address and a rough time
+  evse_typo_share: 0.05      # the charge point id is mistyped (two digits swapped)
+  time_off_hours: [0, 2]     # drivers remember the time this many hours off
+
+site_onboarding:             # an acquired network's export, handed over in one batch
+  network: Rete Rapida Nord
+  sites: 120
+  arrive_week: 7
+  defects:                   # per row, independent
+    comma_decimal: 0.55
+    swapped_coordinates: 0.06
+    power_in_watts: 0.10
+    connector_synonym: 0.70
+    free_text_hours: 0.60
+    missing_postal_code: 0.07     # needs a person: cannot be derived
+    conflicting_power: 0.05       # DC connector rated below 50 kW but listed as rapid; needs a person
+    duplicate_row: 0.04
+    no_card_terminal: 0.12        # AFIR: new rapid points need ad-hoc card payment; needs a person
+  pdf_share: 0.15                 # sites described only in a commissioning protocol's text
+
+tenders:                     # questions from a motorway concession tender and EU grant reports
+  questions: 140
+  arrive_weeks: [10, 18]
+  unanswerable_share: 0.15
+  stale_trap_share: 0.35     # the corpus holds an older, superseded value for the fact asked
+
+people:
+  teams:
+    customer_service: {DE: 12, GB: 6, IT: 5, NL: 4, SE: 3, DK: 2, PL: 3, CZ: 2, AT: 2, HU: 2, RO: 2}
+    roaming_finance: {DE: 5}
+    integration_ops: {IT: 4}
+    bid_team: {DE: 4}
+  speed_sd: 0.25             # people differ in how fast they work (log-normal)
+  adoption:                  # probability a person uses the tool on a case: logistic in these
+    intercept: -2.2
+    trust: 2.4
+    trained: 1.3
+    complexity: -1.6         # people keep the tool for easier cases
+    speed: 0.8               # faster people adopt earlier (and would be faster anyway)
+    initial_trust: 0.35
+    trust_gain: 0.12
+    trust_loss: 0.30
+    trained_share: 0.7
+  review:
+    catch_wrong: 0.72        # a wrong proposal is noticed
+    catch_wrong_flagged: 0.95   # when the proposal said it needed review
+  handling_minutes:          # without the tool, median per case
+    cdr_disputes: 34
+    driver_refunds: 14
+    site_onboarding: 26
+    tender_answers: 48
+  minutes_sd: 0.35
+  complexity_effect: 0.9     # minutes x (1 + effect * complexity), complexity in [0, 1]
+  saving_when_right:         # share of the time a correct proposal saves
+    cdr_disputes: 0.62
+    driver_refunds: 0.48
+    site_onboarding: 0.70
+    tender_answers: 0.55
+  cost_when_wrong: 0.20      # extra time when a wrong proposal is caught and redone
+  summer_load: 0.12          # cases get harder in July and August (a common trend)
+  crm_noise_sd: 0.15         # the CRM's handling time is measured with noise
+  left_open_share: 0.03      # tickets left open over a break: handling time inflated 3-10x
+
+manual_error:               # share of cases a person resolves wrongly without the tool
+  cdr_disputes: 0.07
+  driver_refunds: 0.04
+  site_onboarding: 0.06
+  tender_answers: 0.09
+reopen_share: 0.5            # a wrong resolution comes back (partner re-disputes, driver writes again)
+# when each use case reaches whom is the kit's rollout plan, in config/usecases/*.yaml

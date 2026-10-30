@@ -1,0 +1,444 @@
+{
+ "cdr_disputes": {
+  "eligible_people": 5,
+  "adopted_people": 5,
+  "active_last_4_weeks": 5,
+  "live_cases": 284,
+  "tool_cases": 191,
+  "usage_share_live": 0.6725352112676056,
+  "acceptance": 0.9947643979057592,
+  "rejected": 1,
+  "actions_executed": 193,
+  "money_moved_eur": 946.2,
+  "weekly": [
+   {
+    "week": 6,
+    "cases": 30,
+    "used": 15,
+    "users": 5,
+    "active": 5,
+    "usage_share": 0.5
+   },
+   {
+    "week": 7,
+    "cases": 21,
+    "used": 12,
+    "users": 5,
+    "active": 4,
+    "usage_share": 0.5714285714285714
+   },
+   {
+    "week": 8,
+    "cases": 21,
+    "used": 15,
+    "users": 5,
+    "active": 4,
+    "usage_share": 0.7142857142857143
+   },
+   {
+    "week": 9,
+    "cases": 24,
+    "used": 15,
+    "users": 5,
+    "active": 5,
+    "usage_share": 0.625
+   },
+   {
+    "week": 10,
+    "cases": 21,
+    "used": 11,
+    "users": 5,
+    "active": 5,
+    "usage_share": 0.5238095238095238
+   },
+   {
+    "week": 11,
+    "cases": 26,
+    "used": 16,
+    "users": 5,
+    "active": 3,
+    "usage_share": 0.6153846153846154
+   },
+   {
+    "week": 12,
+    "cases": 19,
+    "used": 14,
+    "users": 4,
+    "active": 4,
+    "usage_share": 0.7368421052631579
+   },
+   {
+    "week": 13,
+    "cases": 17,
+    "used": 9,
+    "users": 5,
+    "active": 3,
+    "usage_share": 0.5294117647058824
+   },
+   {
+    "week": 14,
+    "cases": 22,
+    "used": 19,
+    "users": 5,
+    "active": 5,
+    "usage_share": 0.8636363636363636
+   },
+   {
+    "week": 15,
+    "cases": 24,
+    "used": 20,
+    "users": 5,
+    "active": 5,
+    "usage_share": 0.8333333333333334
+   },
+   {
+    "week": 16,
+    "cases": 23,
+    "used": 17,
+    "users": 5,
+    "active": 5,
+    "usage_share": 0.7391304347826086
+   },
+   {
+    "week": 17,
+    "cases": 16,
+    "used": 15,
+    "users": 5,
+    "active": 5,
+    "usage_share": 0.9375
+   },
+   {
+    "week": 18,
+    "cases": 20,
+    "used": 13,
+    "users": 5,
+    "active": 5,
+    "usage_share": 0.65
+   }
+  ],
+  "by_training": [
+   {
+    "trained": false,
+    "people": 1,
+    "cases": 60,
+    "usage_share": 0.6
+   },
+   {
+    "trained": true,
+    "people": 4,
+    "cases": 224,
+    "usage_share": 0.6919642857142857
+   }
+  ],
+  "reopened_share": {
+   "with_tool": 0.0,
+   "without_tool": 0.03414634146341464
+  }
+ },
+ "driver_refunds": {
+  "eligible_people": 43,
+  "adopted_people": 43,
+  "active_last_4_weeks": 38,
+  "live_cases": 1121,
+  "tool_cases": 423,
+  "usage_share_live": 0.3773416592328278,
+  "acceptance": 0.9456264775413712,
+  "rejected": 23,
+  "actions_executed": 206,
+  "money_moved_eur": 2680.06,
+  "weekly": [
+   {
+    "week": 5,
+    "cases": 57,
+    "used": 20,
+    "users": 18,
+    "active": 10,
+    "usage_share": 0.3508771929824561
+   },
+   {
+    "week": 6,
+    "cases": 55,
+    "used": 16,
+    "users": 17,
+    "active": 9,
+    "usage_share": 0.2909090909090909
+   },
+   {
+    "week": 7,
+    "cases": 46,
+    "used": 13,
+    "users": 14,
+    "active": 8,
+    "usage_share": 0.2826086956521739
+   },
+   {
+    "week": 8,
+    "cases": 39,
+    "used": 17,
+    "users": 16,
+    "active": 9,
+    "usage_share": 0.4358974358974359
+   },
+   {
+    "week": 9,
+    "cases": 98,
+    "used": 34,
+    "users": 32,
+    "active": 18,
+    "usage_share": 0.3469387755102041
+   },
+   {
+    "week": 10,
+    "cases": 85,
+    "used": 33,
+    "users": 30,
+    "active": 18,
+    "usage_share": 0.38823529411764707
+   },
+   {
+    "week": 11,
+    "cases": 80,
+    "used": 27,
+    "users": 31,
+    "active": 17,
+    "usage_share": 0.3375
+   },
+   {
+    "week": 12,
+    "cases": 76,
+    "used": 29,
+    "users": 29,
+    "active": 20,
+    "usage_share": 0.3815789473684211
+   },
+   {
+    "week": 13,
+    "cases": 100,
+    "used": 31,
+    "users": 39,
+    "active": 24,
+    "usage_share": 0.31
+   },
+   {
+    "week": 14,
+    "cases": 78,
+    "used": 27,
+    "users": 35,
+    "active": 18,
+    "usage_share": 0.34615384615384615
+   },
+   {
+    "week": 15,
+    "cases": 88,
+    "used": 45,
+    "users": 33,
+    "active": 25,
+    "usage_share": 0.5113636363636364
+   },
+   {
+    "week": 16,
+    "cases": 102,
+    "used": 44,
+    "users": 41,
+    "active": 28,
+    "usage_share": 0.43137254901960786
+   },
+   {
+    "week": 17,
+    "cases": 121,
+    "used": 55,
+    "users": 41,
+    "active": 25,
+    "usage_share": 0.45454545454545453
+   },
+   {
+    "week": 18,
+    "cases": 96,
+    "used": 32,
+    "users": 38,
+    "active": 23,
+    "usage_share": 0.3333333333333333
+   }
+  ],
+  "by_training": [
+   {
+    "trained": false,
+    "people": 16,
+    "cases": 423,
+    "usage_share": 0.15839243498817968
+   },
+   {
+    "trained": true,
+    "people": 27,
+    "cases": 698,
+    "usage_share": 0.5100286532951289
+   }
+  ],
+  "reopened_share": {
+   "with_tool": 0.002364066193853428,
+   "without_tool": 0.0228734810578985
+  }
+ },
+ "site_onboarding": {
+  "eligible_people": 4,
+  "adopted_people": 3,
+  "active_last_4_weeks": 3,
+  "live_cases": 96,
+  "tool_cases": 46,
+  "usage_share_live": 0.4791666666666667,
+  "acceptance": 1.0,
+  "rejected": 0,
+  "actions_executed": 38,
+  "money_moved_eur": 0.0,
+  "weekly": [
+   {
+    "week": 8,
+    "cases": 24,
+    "used": 12,
+    "users": 4,
+    "active": 3,
+    "usage_share": 0.5
+   },
+   {
+    "week": 9,
+    "cases": 24,
+    "used": 12,
+    "users": 4,
+    "active": 3,
+    "usage_share": 0.5
+   },
+   {
+    "week": 10,
+    "cases": 24,
+    "used": 13,
+    "users": 4,
+    "active": 3,
+    "usage_share": 0.5416666666666666
+   },
+   {
+    "week": 11,
+    "cases": 24,
+    "used": 9,
+    "users": 4,
+    "active": 3,
+    "usage_share": 0.375
+   }
+  ],
+  "by_training": [
+   {
+    "trained": false,
+    "people": 1,
+    "cases": 32,
+    "usage_share": 0.0
+   },
+   {
+    "trained": true,
+    "people": 3,
+    "cases": 64,
+    "usage_share": 0.71875
+   }
+  ],
+  "reopened_share": {
+   "with_tool": 0.0,
+   "without_tool": 0.02702702702702703
+  }
+ },
+ "tender_answers": {
+  "eligible_people": 4,
+  "adopted_people": 4,
+  "active_last_4_weeks": 4,
+  "live_cases": 140,
+  "tool_cases": 88,
+  "usage_share_live": 0.6285714285714286,
+  "acceptance": 0.875,
+  "rejected": 11,
+  "actions_executed": 67,
+  "money_moved_eur": 0.0,
+  "weekly": [
+   {
+    "week": 10,
+    "cases": 28,
+    "used": 14,
+    "users": 4,
+    "active": 4,
+    "usage_share": 0.5
+   },
+   {
+    "week": 11,
+    "cases": 13,
+    "used": 9,
+    "users": 4,
+    "active": 4,
+    "usage_share": 0.6923076923076923
+   },
+   {
+    "week": 12,
+    "cases": 18,
+    "used": 13,
+    "users": 4,
+    "active": 3,
+    "usage_share": 0.7222222222222222
+   },
+   {
+    "week": 13,
+    "cases": 15,
+    "used": 8,
+    "users": 4,
+    "active": 4,
+    "usage_share": 0.5333333333333333
+   },
+   {
+    "week": 14,
+    "cases": 19,
+    "used": 13,
+    "users": 4,
+    "active": 3,
+    "usage_share": 0.6842105263157895
+   },
+   {
+    "week": 15,
+    "cases": 17,
+    "used": 13,
+    "users": 4,
+    "active": 4,
+    "usage_share": 0.7647058823529411
+   },
+   {
+    "week": 16,
+    "cases": 8,
+    "used": 6,
+    "users": 3,
+    "active": 3,
+    "usage_share": 0.75
+   },
+   {
+    "week": 17,
+    "cases": 8,
+    "used": 4,
+    "users": 3,
+    "active": 3,
+    "usage_share": 0.5
+   },
+   {
+    "week": 18,
+    "cases": 14,
+    "used": 8,
+    "users": 4,
+    "active": 3,
+    "usage_share": 0.5714285714285714
+   }
+  ],
+  "by_training": [
+   {
+    "trained": true,
+    "people": 4,
+    "cases": 140,
+    "usage_share": 0.6285714285714286
+   }
+  ],
+  "reopened_share": {
+   "with_tool": 0.0,
+   "without_tool": 0.07692307692307693
+  }
+ }
+}

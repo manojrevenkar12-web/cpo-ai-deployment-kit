@@ -1,0 +1,13 @@
+# Runbook: {{ name }}
+
+Owner: {{ owner }} ({{ function }}). Built with the deployment kit; spec in `config/usecases/{{ id }}.yaml`.
+
+## When something looks wrong
+- Proposals edited or rejected more than the alert in the spec: open the desk's use case page, read
+  the last rejected proposals and their review reasons, and add the failing cases to the dev set.
+- Gateway errors or budget refusals: cases fall back to people automatically; check `/v1/gateway` calls.
+- Wrong action executed: every executed action has an approval id; reverse it in the source system
+  and record the case.
+
+## Switching it off
+Remove the countries from the rollout waves in the spec; nothing else needs to change.

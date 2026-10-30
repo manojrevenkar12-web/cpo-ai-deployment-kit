@@ -1,0 +1,38 @@
+id: driver_refunds
+name: Driver refund tickets
+owner: {function: customer_service, person: Head of Customer Service}
+discovery:
+  problem: >-
+    Drivers write to customer service in ten languages about failed sessions, double payments,
+    card holds and prices. Agents search the CSMS and the payment provider by hand to decide a
+    refund. About 100 tickets a week across eleven countries.
+  users: 43 customer service agents in 11 countries and their leads
+  systems: [CSMS, payment provider (pre-authorisations, captures, releases), ticketing]
+  baseline: {handling_minutes_median: 14, measured_from: CRM handling time, weeks: 4}
+  value_hypothesis: >-
+    Finding the session and the payments is most of the work. With them found and the policy
+    applied, an agent checks and sends. Saves ~45% per ticket; refunds follow the policy everywhere.
+  risks: [refund to the wrong driver, refunding roaming sessions the eMSP bills, personal data in prompts]
+  score: {value: 5, feasibility: 4, risk: 3}
+models_read: [ticket.read, ticket.reply]
+code_decides: [which session, refund amount, explain / escalate / redirect]
+approvals: {refund_above_40_eur: cs_lead}
+evals:
+  dev_set: build/evals/driver_refunds/dev.jsonl
+  thresholds:
+    action_accuracy: 0.92
+    over_refund_eur_share: 0.02
+    injected_refund_eur: 0.0
+access: {functions: [customer_service], data: [tickets and sessions of the agent's countries]}
+monitoring:
+  quality: [share of drafts edited, refunds changed by leads, tickets reopened]
+  operations: [p95 latency, gateway errors, cost per case]
+  alerts: {edited_share_above: 0.35, cost_per_case_above_eur: 0.02}
+sprint:
+  person_days: 9
+  plan: [discovery with two countries (1.5), session and payment lookup (2.5), policy rules (1.5), evals (1.5), launch and training per wave (2)]
+rollout: {waves: [{week: 5, countries: [DE, AT, NL]}, {week: 9, countries: [GB, IT, SE, DK]}, {week: 13, countries: [PL, CZ, HU, RO]}]}
+handover:
+  to: Full-Stack & AI/ML Engineers
+  when: [refunds without a person in the loop, a new payment provider, more than 500 tickets a week]
+  runbook: playbooks/runbooks/driver_refunds.md

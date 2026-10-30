@@ -1,0 +1,32 @@
+# Business rules the use cases apply. Owned by the business functions; changing a number here is a
+# business decision, reviewed like code. Code decides from these rules; models only read and write.
+
+cdr_disputes:                # owner: Roaming Finance
+  min_credit_eur: 0.10       # smaller differences are rounding and are not credited
+  rounding_tolerance_eur: 0.02
+  peak_hours_local: [17, 21]
+  match_window_minutes: 45   # a reference by charge point and local time matches sessions this close
+  approval:
+    role: finance_approver
+    batch_below_eur: 25      # small credits may be approved in one batch
+  reply_in_partner_language: true
+
+driver_refunds:              # owner: Customer Service
+  no_energy_kwh: 0.2         # below this a session counts as not charged at all
+  preauth_release_days: 7    # card holds are released by the acquirer within this many days
+  min_refund_eur: 0.50
+  approval_above_eur: 40     # refunds above this need a customer-service lead
+  approval_role: cs_lead
+  match_window_hours: 3      # a ticket's stated time matches sessions this close
+  roaming_tokens: ["app:"]   # sessions paid through an eMSP are refunded by the eMSP
+
+site_onboarding:             # owner: Integration Operations (Italy)
+  country_bounds: {IT: {lat: [35.4, 47.2], lon: [6.6, 18.6]}}
+  rapid_kw: 50               # AFIR: new points at or above this need ad-hoc card payment
+  publish_only_without_issues: true
+
+tender_answers:              # owner: Business Development
+  min_score: 2.2             # retrieval score below this: say the library has no answer
+  prefer_newest: true        # when passages disagree, the newest document wins
+  every_sentence_cited: true
+  approval_role: bid_manager

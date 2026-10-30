@@ -1,0 +1,41 @@
+# Every model call goes through the gateway: which model a task uses, what it may cost, what is
+# removed before a model sees it, and what its answer must look like.
+
+models:   # USD per million tokens, list prices (computeprices.com, checked 2026-10-29)
+  claude-haiku-5-5: {provider: foundry, input: 0.10, output: 0.50, latency_ms: [350, 900]}
+  claude-sonnet-5-5: {provider: foundry, input: 2.00, output: 10.00, latency_ms: [900, 2600]}
+  claude-opus-5-5: {provider: foundry, input: 4.00, output: 20.00, latency_ms: [1500, 4200]}
+usd_to_eur: 0.92
+provider: simulated          # simulated | anthropic | foundry (CPOKIT_PROVIDER overrides)
+
+tasks:    # task -> use case (budget owner), model route (first that is healthy and within budget)
+  dispute.read: {use_case: cdr_disputes, route: [claude-haiku-5-5, claude-sonnet-5-5], max_output_tokens: 800}
+  dispute.reply: {use_case: cdr_disputes, route: [claude-sonnet-5-5, claude-haiku-5-5], max_output_tokens: 700}
+  ticket.read: {use_case: driver_refunds, route: [claude-haiku-5-5], max_output_tokens: 400}
+  ticket.reply: {use_case: driver_refunds, route: [claude-haiku-5-5, claude-sonnet-5-5], max_output_tokens: 500}
+  site.map: {use_case: site_onboarding, route: [claude-sonnet-5-5, claude-haiku-5-5], max_output_tokens: 900}
+  tender.query: {use_case: tender_answers, route: [claude-haiku-5-5], max_output_tokens: 120}
+  tender.answer: {use_case: tender_answers, route: [claude-sonnet-5-5, claude-opus-5-5], max_output_tokens: 600}
+
+budgets_eur_per_day:   # per use case; a call that would exceed it is refused, the case goes to a person
+  cdr_disputes: 4.0
+  driver_refunds: 6.0
+  site_onboarding: 3.0
+  tender_answers: 3.0
+
+guardrails:
+  mask:                # replaced before any model sees the text
+    email: '[\w.+-]+@[\w-]+\.[\w.]+'
+    phone: '\+\d{2}[\d ]{8,14}\d'
+    iban: '\b[A-Z]{2}\d{2}[A-Z0-9 ]{12,30}\b'
+    card_number: '\b(?:\d[ -]?){13,19}\b'
+  injection_markers:   # lines with these are quarantined: shown to the person, never to a model
+    - 'ignore (all |your )?(previous|prior) instructions'
+    - 'system( note)?\s*:'
+    - '^\s*assistant\s*:'
+    - 'note to the automated assistant'
+    - 'for ai assistants'
+    - '<!--'
+    - 'skip the review'
+    - 'do not ask for approval'
+  max_input_chars: 12000

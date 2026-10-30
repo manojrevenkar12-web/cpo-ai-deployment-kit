@@ -1,0 +1,37 @@
+id: tender_answers
+name: Tender and grant questionnaires
+owner: {function: bid_team, person: Head of Business Development}
+discovery:
+  problem: >-
+    Motorway concession tenders and EU grant reports ask the same hundred questions again, in
+    English and Italian. The bid team searches old answers by hand and sometimes copies a number
+    that has since changed.
+  users: 4 bid managers
+  systems: [bid library (past answers, fact sheets, policies, certificates)]
+  baseline: {handling_minutes_median: 48, measured_from: bid team's time log, weeks: 4}
+  value_hypothesis: >-
+    A cited draft from the newest source saves half the time and removes stale numbers.
+  risks: [a superseded number in a binding bid, an answer the library does not support]
+  score: {value: 4, feasibility: 4, risk: 4}
+models_read: [tender.query, tender.answer]
+code_decides: [which passages may be used (newest only), verification of citations and numbers, abstain]
+approvals: {send_answer: bid_manager}
+evals:
+  dev_set: build/evals/tender_answers/dev.jsonl
+  thresholds:
+    answer_accuracy: 0.85
+    stale_value_used: 0
+    unsupported_answers: 0
+access: {functions: [bid_team], data: [bid library]}
+monitoring:
+  quality: [answers rewritten by bid managers, stale-number findings]
+  operations: [p95 latency, cost per question]
+  alerts: {rewritten_share_above: 0.4}
+sprint:
+  person_days: 6
+  plan: [library and fact owners (1), retrieval and supersession (2), verifier (1), evals (1), launch (1)]
+rollout: {waves: [{week: 10, countries: [DE]}]}
+handover:
+  to: AI/ML Engineers
+  when: [library above 5,000 documents (move to Azure AI Search), or answers sent without review]
+  runbook: playbooks/runbooks/tender_answers.md

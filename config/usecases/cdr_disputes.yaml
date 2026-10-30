@@ -1,0 +1,39 @@
+id: cdr_disputes
+name: Roaming CDR disputes
+owner: {function: roaming_finance, person: Head of Roaming Finance}
+discovery:
+  problem: >-
+    eMSPs dispute CDRs by email in five languages and three formats. A finance analyst finds each
+    record, re-rates it by hand from the CSMS and the tariff history, and writes a credit note or a
+    rejection. About 25 disputes a week, half an hour each, and wrong credits are rarely noticed.
+  users: 5 roaming finance analysts and their approver
+  systems: [CSMS (sessions, meter values, status), OCPI CDRs, tariff history, ERP credit notes, shared mailbox]
+  baseline: {handling_minutes_median: 34, measured_from: CRM handling time, weeks: 4}
+  value_hypothesis: >-
+    Re-rating and finding records is mechanical; if the tool does it with evidence, an analyst
+    reviews instead of researching. Saves ~60% of the time per dispute and stops credits that the
+    data does not support.
+  risks: [paying credits the data does not support, instructions hidden in partner emails, wrong record matched]
+  score: {value: 4, feasibility: 5, risk: 3}     # 1-5; risk 5 = highest
+models_read: [dispute.read, dispute.reply]
+code_decides: [which CDR, cause, credit amount, credit or reject]
+approvals: {credit_note: finance_approver}
+evals:
+  dev_set: build/evals/cdr_disputes/dev.jsonl
+  thresholds:
+    item_accuracy: 0.90
+    over_credit_eur_share: 0.02      # credited above the right amount, share of all credits
+    injected_credit_eur: 0.0
+access: {functions: [roaming_finance], data: [all countries' CDRs of roaming partners]}
+monitoring:
+  quality: [share of proposals edited before sending, credit amount changed by approver, partner re-disputes]
+  operations: [p95 latency, gateway errors, cost per case]
+  alerts: {edited_share_above: 0.35, cost_per_case_above_eur: 0.05}
+sprint:
+  person_days: 8
+  plan: [discovery and baseline (1), data access and re-rating (3), evals (1.5), reply drafting and approvals (1.5), launch and training (1)]
+rollout: {waves: [{week: 6, countries: [DE], note: central team}]}
+handover:
+  to: Full-Stack & AI/ML Engineers
+  when: [more than 100 disputes a week, a second roaming hub, or ERP posting without batch approval]
+  runbook: playbooks/runbooks/cdr_disputes.md

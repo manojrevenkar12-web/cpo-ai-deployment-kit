@@ -1,0 +1,32 @@
+id: {{ id }}
+name: {{ name }}
+owner: {function: {{ function }}, person: {{ owner }}}
+discovery:
+  problem: >-
+    TODO: what people do today, in their words, how often and how long it takes.
+  users: TODO
+  systems: [TODO]
+  baseline: {handling_minutes_median: null, measured_from: TODO, weeks: 0}
+  value_hypothesis: >-
+    TODO: what changes for the user if the tool works, and the number that would show it.
+  risks: [TODO]
+  score: {value: 3, feasibility: 3, risk: 3}
+models_read: [TODO]
+code_decides: [TODO]
+approvals: {}
+evals:
+  dev_set: build/evals/{{ id }}/dev.jsonl
+  thresholds: {}
+access: {functions: [{{ function }}], data: [TODO]}
+monitoring:
+  quality: [share of drafts edited]
+  operations: [p95 latency, gateway errors, cost per case]
+  alerts: {cost_per_case_above_eur: 0.05}
+sprint:
+  person_days: 8
+  plan: [discovery and baseline (1), data access (2), rules and drafting (2), evals (1.5), launch and training (1.5)]
+rollout: {waves: []}
+handover:
+  to: Full-Stack & AI/ML Engineers
+  when: [TODO]
+  runbook: playbooks/runbooks/{{ id }}.md

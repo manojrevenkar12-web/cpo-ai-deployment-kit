@@ -1,0 +1,37 @@
+id: site_onboarding
+name: Acquired-site onboarding
+owner: {function: integration_ops, person: Integration Lead Italy}
+discovery:
+  problem: >-
+    An acquired network hands over 120 sites as a spreadsheet with Italian headers and some
+    commissioning protocols. Each site must become an OCPI location with AFIR-compliant data before
+    it is published to roaming partners and the national access point.
+  users: 4 integration specialists and their lead
+  systems: [acquired network's export and documents, location register, roaming publication]
+  baseline: {handling_minutes_median: 26, measured_from: work log, weeks: 1}
+  value_hypothesis: >-
+    Most rows only need units, names and hours normalised; with that done and checked, people
+    spend their time on the few sites with real gaps.
+  risks: [publishing a wrong location to partners, inventing a postal code, hiding an AFIR gap]
+  score: {value: 3, feasibility: 5, risk: 2}
+models_read: [site.map]
+code_decides: [validation, AFIR checks, publish or needs a person]
+approvals: {publish_location: integration_lead}
+evals:
+  dev_set: build/evals/site_onboarding/dev.jsonl
+  thresholds:
+    site_accuracy: 0.90
+    wrong_published: 0
+access: {functions: [integration_ops], data: [the acquired network's documents]}
+monitoring:
+  quality: [locations corrected after publishing, issues overruled by people]
+  operations: [cost per site]
+  alerts: {corrected_after_publish_above: 0}
+sprint:
+  person_days: 5
+  plan: [pilot export labelled with the team (1), mapping and checks (2), evals (1), batch run with review (1)]
+rollout: {waves: [{week: 8, countries: [IT]}]}
+handover:
+  to: Full-Stack Engineers
+  when: [a second acquisition, or onboarding becomes a continuous feed]
+  runbook: playbooks/runbooks/site_onboarding.md

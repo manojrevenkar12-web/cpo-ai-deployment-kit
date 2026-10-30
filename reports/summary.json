@@ -1,0 +1,32 @@
+{
+ "world": {
+  "sessions": 14908,
+  "cdrs": 3701,
+  "payments": 25955,
+  "cases": {
+   "cdr_disputes": {
+    "dev": 169,
+    "live": 396
+   },
+   "driver_refunds": {
+    "dev": 400,
+    "live": 1822
+   },
+   "site_onboarding": {
+    "dev": 40,
+    "live": 120
+   },
+   "tender_answers": {
+    "dev": 60,
+    "live": 140
+   }
+  }
+ },
+ "deployment": {
+  "cases": 2478,
+  "used": 748,
+  "model_calls": 1447,
+  "llm_cost_eur": 0.336
+ },
+ "gate": true
+}

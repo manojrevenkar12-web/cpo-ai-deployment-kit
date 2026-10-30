@@ -1,0 +1,17 @@
+"""{{ name }} (owner: {{ owner }}).
+
+The model reads; code decides; anything that changes money or published data is an Action with an
+approver role. Fill in `run` and keep the shape of the Proposal."""
+
+from __future__ import annotations
+
+from typing import Any
+
+from .base import Context, Proposal, check_access
+
+USE_CASE = "{{ id }}"
+
+
+def run(case: dict[str, Any], ctx: Context) -> Proposal:
+    check_access(ctx, USE_CASE, case["country"])
+    raise NotImplementedError("read the case, decide with rules from config/policy.yaml, propose actions")

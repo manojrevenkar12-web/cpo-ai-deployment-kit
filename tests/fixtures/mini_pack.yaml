@@ -1,0 +1,73 @@
+name: mini
+description: A tiny pack written by the kit's author to test the pack loader (not a held-out set).
+today: "2026-09-15"
+disputes:
+  - id: d1
+    partner: {id: TESTEMSP, name: Test eMSP, lang: en, country: NL}
+    email: |
+      Hello, we dispute CDR CDR-DE-9900001 (the price does not match the tariff). We dispute 5.00 EUR.
+    records:
+      - evse: DE*CPO*E9001*1
+        kind: DC
+        start_local: "2026-09-02 10:00"
+        charging_minutes: 40
+        energy_kwh: 40.0
+        idle_minutes: 5
+        tariff: {energy: 0.52, peak: 0.61, idle_per_min: 0.10, idle_grace_min: 30}
+        tariff_change: {days_after_start: 2, energy: 0.60, peak: 0.69}
+        cdrs: [{cdr_id: CDR-DE-9900001, session_ref: plain, billing: early_tariff}]
+    expected: [{cdr_id: CDR-DE-9900001, decision: credit}]
+  - id: d2
+    partner: {id: TESTEMSP, name: Test eMSP, lang: en, country: NL}
+    email: |
+      Hello, CDR CDR-DE-9900002 was billed twice, CDR CDR-DE-9900003 is the duplicate. We dispute it.
+    records:
+      - evse: DE*CPO*E9001*2
+        kind: DC
+        start_local: "2026-09-03 12:00"
+        charging_minutes: 30
+        energy_kwh: 25.0
+        idle_minutes: 0
+        tariff: {energy: 0.52, peak: 0.61, idle_per_min: 0.10, idle_grace_min: 30}
+        cdrs: [{cdr_id: CDR-DE-9900002, session_ref: plain, billing: correct},
+               {cdr_id: CDR-DE-9900003, session_ref: hub, billing: correct}]
+    expected: [{cdr_id: CDR-DE-9900003, decision: credit}]
+refunds:
+  - id: r1
+    country: DE
+    ticket: |
+      Mir wurden 9,80 EUR berechnet, aber mein Auto hat überhaupt nicht geladen.
+      Ladepunkt DE*CPO*E9002*1, 2026-09-10 08:15. Karte endet auf 4821.
+    session:
+      evse: DE*CPO*E9002*1
+      kind: DC
+      start_local: "2026-09-10 08:15"
+      charging_minutes: 5
+      energy_kwh: 0.05
+      idle_minutes: 2
+      paid_with: card
+      card_last4: "4821"
+      tariff: {energy: 0.52, peak: 0.61, idle_per_min: 0.10, idle_grace_min: 30}
+      payments: {preauth_eur: 100, captures: 1, released: true, captured_override_eur: 9.80}
+      days_before_ticket: 5
+    other_sessions_same_evse: 2
+    expected: {action: refund}
+sites:
+  export_headers: [Codice sito, Nome, Indirizzo, CAP, Comune, Latitudine, Longitudine, Punti di ricarica, Potenza max, Orari, Pagamento]
+  rows:
+    - {Codice sito: MIN0001, Nome: Mini 1, Indirizzo: Via Roma 1, CAP: "20121", Comune: Milano, Latitudine: "45,46412",
+       Longitudine: "9,19021", Punti di ricarica: "2x CCS2 150kW", Potenza max: "150", Orari: "24/7", Pagamento: "POS contactless, app"}
+  expected:
+    - site_code: MIN0001
+      needs_person: false
+      location: {name: Mini 1, address: Via Roma 1, postal_code: "20121", city: Milano, latitude: 45.46412, longitude: 9.19021,
+                 connectors: [{standard: IEC_62196_T2_COMBO, power_kw: 150, count: 2}], open_24_7: true, card_payment: true}
+tenders:
+  library:
+    - {doc_id: FS-2025, title: Fact sheet 2025, date: "2025-01-01", lang: en,
+       passages: ["Our contractual availability commitment for high-power chargers is 97% per year."]}
+    - {doc_id: FS-2026, title: Fact sheet 2026, date: "2026-03-01", lang: en,
+       passages: ["Our contractual availability commitment for high-power chargers is 98.5% per year."]}
+  questions:
+    - {id: q1, text: "What availability do you commit to for high-power chargers?", expected: {answerable: true, value: "98.5%", stale_values: ["97%"]}}
+    - {id: q2, text: "Do you operate hydrogen refuelling stations?", expected: {answerable: false}}

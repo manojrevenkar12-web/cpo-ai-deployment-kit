@@ -102,9 +102,15 @@ class Library:
         self.index = BM25([tokens(p["text"]) for p in passages])
 
     def search(self, keywords: list[str], k: int = 6) -> list[tuple[float, dict[str, Any]]]:
+        """Top passages by BM25, each with its coverage: the idf-weighted share of the query's terms it
+        contains (0-1). Coverage, unlike a raw BM25 score, means the same in a library of 10 documents
+        and of 10,000; a term the library has never seen counts fully against coverage."""
         q = [t for w in keywords for t in tokens(w)]
-        ranked = sorted(zip(self.index.scores(q), self.passages, strict=True), key=lambda x: -x[0])
-        return [(s, p) for s, p in ranked[:k] if s > 0]
+        unseen = max(self.index.idf.values(), default=1.0)
+        weights = {t: self.index.idf.get(t, unseen) for t in set(q)}
+        total = sum(weights.values()) or 1.0
+        ranked = sorted(zip(self.index.scores(q), self.passages, self.index.tf, strict=True), key=lambda x: -x[0])
+        return [(sum(w for t, w in weights.items() if t in tf) / total, p) for s, p, tf in ranked[:k] if s > 0]
 
     def newest_only(self, hits: list[tuple[float, dict[str, Any]]]) -> tuple[list, list]:
         """Drops a passage when a newer document states the same fact; returns (kept, superseded)."""
@@ -171,7 +177,7 @@ def run(case: dict[str, Any], ctx: Context) -> Proposal:
         )
     top = kept[0][0] if kept else 0.0
     answer: dict[str, Any] = {"abstain": True, "sentences": []}
-    if top >= pol["min_score"]:
+    if top >= pol["min_coverage"]:
         given = [{"pid": p["pid"], "text": p["text"], "date": lib.docs[p["doc_id"]]["date"]} for _, p in kept[:3]]
         try:
             ar = ctx.gateway.call("tender.answer", {"question": q["text"], "passages": given})

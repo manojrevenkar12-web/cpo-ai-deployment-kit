@@ -101,6 +101,17 @@ def assess(ctx: Context, cdr: dict[str, Any], pol: dict[str, Any]) -> dict[str, 
         }
     siblings = sys.cdrs_for_session(bare)
     first = min(siblings, key=lambda c: (c["sent_ts"], c["cdr_id"]))
+    if len(siblings) > 1 and first["cdr_id"] == cdr["cdr_id"]:
+        later = [c["cdr_id"] for c in siblings if c["cdr_id"] != cdr["cdr_id"]]
+        ev.append(Evidence("this session was billed again later", later, f"ocpi:session/{bare}"))
+        return {
+            "cause": "original_of_duplicate",
+            "credit": 0.0,
+            "decision": "reject",
+            "evidence": ev,
+            "duplicates": later,
+            "note": f"the original; the duplicate is {', '.join(later)}",
+        }
     if len(siblings) > 1 and first["cdr_id"] != cdr["cdr_id"]:
         ev.append(Evidence("same session already billed", first["cdr_id"], f"ocpi:cdr/{first['cdr_id']}"))
         return {
@@ -218,6 +229,9 @@ def run(case: dict[str, Any], ctx: Context) -> Proposal:
             continue
         seen.add(cdr["cdr_id"])
         a = assess(ctx, cdr, pol)
+        for dup in a.get("duplicates", []):  # the email named the original; the duplicate is what is owed
+            if dup not in {r.get("cdr_id") for r in refs}:
+                refs.append({"cdr_id": dup, "claim": "twice"})
         evidence += a["evidence"]
         item = {
             "ref": ref,

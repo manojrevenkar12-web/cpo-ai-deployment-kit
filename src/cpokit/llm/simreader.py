@@ -224,17 +224,18 @@ def dispute_read(inp: dict[str, Any]) -> dict[str, Any]:
         claimed = _num(amounts[-1]) if amounts else None
         if "|" in line:  # table: the billed column is not a claim
             claimed = None
-        items.append(
-            {
-                "cdr_id": cdrs[0] if cdrs else None,
-                "session_ref": sessions[0] if sessions else None,
-                "evse_id": evses[0] if evses else None,
-                "local_time": None if utc else (local[0] if local else None),
-                "utc_time": f"{utc.group(1)}T{utc.group(2)}:00Z" if utc else None,
-                "claimed_eur": claimed,
-                "claim": _claim(line),
-            }
-        )
+        for k, cdr_id in enumerate(cdrs or [None]):
+            items.append(
+                {
+                    "cdr_id": cdr_id,
+                    "session_ref": sessions[k] if k < len(sessions) else None,
+                    "evse_id": evses[0] if evses else None,
+                    "local_time": None if utc else (local[0] if local else None),
+                    "utc_time": f"{utc.group(1)}T{utc.group(2)}:00Z" if utc else None,
+                    "claimed_eur": claimed if k == 0 else None,
+                    "claim": _claim(line),
+                }
+            )
     return {"language": detect_language(text), "items": items}
 
 

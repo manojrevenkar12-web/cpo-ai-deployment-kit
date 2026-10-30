@@ -26,7 +26,7 @@ site_onboarding:             # owner: Integration Operations (Italy)
   publish_only_without_issues: true
 
 tender_answers:              # owner: Business Development
-  min_score: 2.2             # retrieval score below this: say the library has no answer
+  min_coverage: 0.2          # share of the question's (idf-weighted) terms the best passage must contain
   prefer_newest: true        # when passages disagree, the newest document wins
   every_sentence_cited: true
   approval_role: bid_manager

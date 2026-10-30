@@ -102,7 +102,8 @@ def run(case: dict[str, Any], ctx: Context) -> Proposal:
     check_access(ctx, USE_CASE, case["country"])
     pol = settings.policy()[USE_CASE]
     code = case["ref"]
-    rows = [r for r in ctx.systems.site_rows() if r.get("Codice sito") == code]
+    # the export's own column names vary by network: a row belongs to the site whose code it carries
+    rows = [r for r in ctx.systems.site_rows() if any(str(v).strip() == code for k, v in r.items() if k != "row_no")]
     docs = [d for d in ctx.systems.site_documents() if d["site_code"] == code]
     results, reasons = [], []
     evidence = [Evidence("export rows", len(rows), f"docs:site_rows/{code}")]

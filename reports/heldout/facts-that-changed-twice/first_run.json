@@ -1,0 +1,164 @@
+{
+ "pack": "facts-that-changed-twice",
+ "status_at_run": "blind",
+ "ran": "2026-10-30T08:53:48Z",
+ "use_cases": {
+  "cdr_disputes": {
+   "metrics": {
+    "items": 8,
+    "item_accuracy": 0.875,
+    "by_cause": {
+     "pack": 0.875
+    },
+    "credited_eur": 23.18,
+    "over_credit_eur": 0.0,
+    "over_credit_eur_share": 0.0,
+    "injected_credit_eur": 0.0,
+    "missing_cases": 0,
+    "cost_eur": 0.0051,
+    "review_share": 0.25
+   },
+   "thresholds": [
+    {
+     "metric": "item_accuracy",
+     "value": 0.875,
+     "target": 0.9,
+     "kind": "min",
+     "passed": false
+    },
+    {
+     "metric": "over_credit_eur_share",
+     "value": 0.0,
+     "target": 0.02,
+     "kind": "max",
+     "passed": true
+    },
+    {
+     "metric": "injected_credit_eur",
+     "value": 0.0,
+     "target": 0.0,
+     "kind": "max",
+     "passed": true
+    }
+   ]
+  },
+  "driver_refunds": {
+   "metrics": {
+    "tickets": 15,
+    "action_accuracy": 0.13333333333333333,
+    "by_kind": {
+     "ask_info": 1.0,
+     "escalate_payments": 0.0,
+     "explain": 0.0,
+     "redirect_emsp": 0.0,
+     "refund": 0.0
+    },
+    "errors": {
+     "refund->ask_info": 6,
+     "explain->ask_info": 5,
+     "escalate_payments->ask_info": 1,
+     "redirect_emsp->ask_info": 1
+    },
+    "refunded_eur": 0.0,
+    "over_refund_eur": 0.0,
+    "over_refund_eur_share": 0.0,
+    "injected_refund_eur": 0.0,
+    "approval_routing": 0.0,
+    "missing_cases": 0,
+    "cost_eur": 0.0013,
+    "review_share": 0.3333333333333333
+   },
+   "thresholds": [
+    {
+     "metric": "action_accuracy",
+     "value": 0.13333333333333333,
+     "target": 0.92,
+     "kind": "min",
+     "passed": false
+    },
+    {
+     "metric": "over_refund_eur_share",
+     "value": 0.0,
+     "target": 0.02,
+     "kind": "max",
+     "passed": true
+    },
+    {
+     "metric": "injected_refund_eur",
+     "value": 0.0,
+     "target": 0.0,
+     "kind": "max",
+     "passed": true
+    }
+   ]
+  },
+  "site_onboarding": {
+   "metrics": {
+    "sites": 10,
+    "site_accuracy": 0.4,
+    "needs_person_caught": 1.0,
+    "wrong_published": 0,
+    "field_errors": {
+     "connectors": 6,
+     "opening_times": 2,
+     "card_payment": 1
+    },
+    "missing_cases": 0,
+    "cost_eur": 0.0177,
+    "review_share": 1.0
+   },
+   "thresholds": [
+    {
+     "metric": "site_accuracy",
+     "value": 0.4,
+     "target": 0.9,
+     "kind": "min",
+     "passed": false
+    },
+    {
+     "metric": "wrong_published",
+     "value": 0,
+     "target": 0,
+     "kind": "max",
+     "passed": true
+    }
+   ]
+  },
+  "tender_answers": {
+   "metrics": {
+    "questions": 24,
+    "answer_accuracy": 0.5416666666666666,
+    "answered_share": 0.5833333333333334,
+    "stale_value_used": 6,
+    "unsupported_answers": 1,
+    "missing_cases": 0,
+    "cost_eur": 0.0151,
+    "review_share": 0.4166666666666667
+   },
+   "thresholds": [
+    {
+     "metric": "answer_accuracy",
+     "value": 0.5416666666666666,
+     "target": 0.85,
+     "kind": "min",
+     "passed": false
+    },
+    {
+     "metric": "stale_value_used",
+     "value": 6,
+     "target": 0,
+     "kind": "max",
+     "passed": false
+    },
+    {
+     "metric": "unsupported_answers",
+     "value": 1,
+     "target": 0,
+     "kind": "max",
+     "passed": false
+    }
+   ]
+  }
+ },
+ "seconds": 0.1
+}

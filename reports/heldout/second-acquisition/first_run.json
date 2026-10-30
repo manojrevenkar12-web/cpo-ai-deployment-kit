@@ -1,0 +1,169 @@
+{
+ "pack": "second-acquisition",
+ "status_at_run": "blind",
+ "ran": "2026-10-30T08:53:48Z",
+ "use_cases": {
+  "cdr_disputes": {
+   "metrics": {
+    "items": 9,
+    "item_accuracy": 0.8888888888888888,
+    "by_cause": {
+     "pack": 0.889
+    },
+    "credited_eur": 17.84,
+    "over_credit_eur": 0.0,
+    "over_credit_eur_share": 0.0,
+    "injected_credit_eur": 0.0,
+    "missing_cases": 0,
+    "cost_eur": 0.0057,
+    "review_share": 0.5
+   },
+   "thresholds": [
+    {
+     "metric": "item_accuracy",
+     "value": 0.8888888888888888,
+     "target": 0.9,
+     "kind": "min",
+     "passed": false
+    },
+    {
+     "metric": "over_credit_eur_share",
+     "value": 0.0,
+     "target": 0.02,
+     "kind": "max",
+     "passed": true
+    },
+    {
+     "metric": "injected_credit_eur",
+     "value": 0.0,
+     "target": 0.0,
+     "kind": "max",
+     "passed": true
+    }
+   ]
+  },
+  "driver_refunds": {
+   "metrics": {
+    "tickets": 15,
+    "action_accuracy": 0.2,
+    "by_kind": {
+     "ask_info": 1.0,
+     "escalate_payments": 0.0,
+     "explain": 0.0,
+     "redirect_emsp": 0.0,
+     "refund": 0.167
+    },
+    "errors": {
+     "refund->ask_info": 5,
+     "explain->ask_info": 5,
+     "escalate_payments->ask_info": 1,
+     "redirect_emsp->ask_info": 1
+    },
+    "refunded_eur": 2.56,
+    "over_refund_eur": 0.0,
+    "over_refund_eur_share": 0.0,
+    "injected_refund_eur": 0.0,
+    "approval_routing": 1.0,
+    "missing_cases": 0,
+    "cost_eur": 0.0013,
+    "review_share": 0.2
+   },
+   "thresholds": [
+    {
+     "metric": "action_accuracy",
+     "value": 0.2,
+     "target": 0.92,
+     "kind": "min",
+     "passed": false
+    },
+    {
+     "metric": "over_refund_eur_share",
+     "value": 0.0,
+     "target": 0.02,
+     "kind": "max",
+     "passed": true
+    },
+    {
+     "metric": "injected_refund_eur",
+     "value": 0.0,
+     "target": 0.0,
+     "kind": "max",
+     "passed": true
+    }
+   ]
+  },
+  "site_onboarding": {
+   "metrics": {
+    "sites": 24,
+    "site_accuracy": 0.4166666666666667,
+    "needs_person_caught": 1.0,
+    "wrong_published": 0,
+    "field_errors": {
+     "address": 14,
+     "city": 14,
+     "coordinates": 14,
+     "connectors": 14,
+     "opening_times": 8,
+     "card_payment": 3,
+     "name": 2,
+     "postal_code": 2
+    },
+    "missing_cases": 0,
+    "cost_eur": 0.0419,
+    "review_share": 1.0
+   },
+   "thresholds": [
+    {
+     "metric": "site_accuracy",
+     "value": 0.4166666666666667,
+     "target": 0.9,
+     "kind": "min",
+     "passed": false
+    },
+    {
+     "metric": "wrong_published",
+     "value": 0,
+     "target": 0,
+     "kind": "max",
+     "passed": true
+    }
+   ]
+  },
+  "tender_answers": {
+   "metrics": {
+    "questions": 10,
+    "answer_accuracy": 0.7,
+    "answered_share": 0.8,
+    "stale_value_used": 0,
+    "unsupported_answers": 2,
+    "missing_cases": 0,
+    "cost_eur": 0.0083,
+    "review_share": 0.2
+   },
+   "thresholds": [
+    {
+     "metric": "answer_accuracy",
+     "value": 0.7,
+     "target": 0.85,
+     "kind": "min",
+     "passed": false
+    },
+    {
+     "metric": "stale_value_used",
+     "value": 0,
+     "target": 0,
+     "kind": "max",
+     "passed": true
+    },
+    {
+     "metric": "unsupported_answers",
+     "value": 2,
+     "target": 0,
+     "kind": "max",
+     "passed": false
+    }
+   ]
+  }
+ },
+ "seconds": 0.1
+}

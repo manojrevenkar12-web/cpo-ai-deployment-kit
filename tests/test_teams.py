@@ -39,3 +39,14 @@ def test_only_the_role_can_approve_from_teams(systems, store):
     assert ok["_approval_token"] and "Approved" in ok["body"][0]["text"]
     unknown = desk.on_card_action("aad-nobody", "approve", {"action_id": a["action_id"]})
     assert "not set up" in unknown["body"][0]["text"]
+
+
+def test_the_teams_app_wires_to_the_agents_sdk(systems, store):
+    from microsoft_agents.hosting.core import AgentApplication
+
+    from cpokit.agents.teams import create_app, sdk_config
+
+    app, adapter = create_app(
+        TeamsDesk(systems, store, lambda _: None), sdk_config("00000000-0000-0000-0000-000000000000", "t", "x")
+    )
+    assert isinstance(app, AgentApplication) and adapter is not None

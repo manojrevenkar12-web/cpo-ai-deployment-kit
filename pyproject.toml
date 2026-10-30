@@ -22,6 +22,8 @@ dependencies = [
   "opentelemetry-sdk>=1.36",
   "psycopg[binary]>=3.2",
   "anthropic>=0.70",
+  "microsoft-agents-hosting-aiohttp>=1.9",
+  "microsoft-agents-authentication-msal>=1.9",
 ]
 
 [project.scripts]

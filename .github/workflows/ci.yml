@@ -1,0 +1,72 @@
+name: ci
+on:
+  push: {branches: [main]}
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      heldout: {description: "held-out pack to run (its first run is recorded once)", required: false, default: ""}
+
+jobs:
+  python:
+    name: lint and tests (with PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: {POSTGRES_USER: kit, POSTGRES_PASSWORD: kit, POSTGRES_DB: kit_test}
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U kit" --health-interval 5s --health-retries 10
+    env:
+      CPOKIT_TEST_DATABASE_URL: postgresql://kit:kit@localhost:5432/kit_test
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - run: scripts/ci-run.sh "uv sync" uv sync --frozen
+      - run: scripts/ci-run.sh "ruff" uv run ruff check src tests
+      - run: scripts/ci-run.sh "ruff format" uv run ruff format --check src tests
+      - run: scripts/ci-run.sh "pytest" uv run pytest -q
+      - run: scripts/ci-run.sh "connector current" bash -c "uv run cpokit power-platform && git diff --exit-code integrations"
+
+  pipeline:
+    name: the whole run, judged by its gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - run: scripts/ci-run.sh "uv sync" uv sync --frozen
+      - run: scripts/ci-run.sh "cpokit run" uv run cpokit run
+      - run: scripts/ci-run.sh "reports current" bash -c "uv run cpokit export-web && git diff --stat --exit-code -- reports/gate.json"
+      - run: scripts/ci-run.sh "first runs unchanged" git diff --exit-code -- 'reports/heldout/*/first_run.json'
+
+  web:
+    name: desk (unit and end-to-end under the production CSP)
+    runs-on: ubuntu-latest
+    defaults: {run: {working-directory: web}}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: {node-version: 22, cache: npm, cache-dependency-path: web/package-lock.json}
+      - run: ../scripts/ci-run.sh "npm ci" npm ci
+      - run: ../scripts/ci-run.sh "tsc" npx tsc --noEmit -p .
+      - run: ../scripts/ci-run.sh "vitest" npm test
+      - run: ../scripts/ci-run.sh "playwright install" npx playwright install --with-deps chromium
+      - run: ../scripts/ci-run.sh "build" npm run build
+      - run: ../scripts/ci-run.sh "playwright" npx playwright test
+
+  azure:
+    name: Azure templates and image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: scripts/ci-run.sh "bicep build" az bicep build --file azure/main.bicep --stdout
+      - run: scripts/ci-run.sh "docker build" docker build -t cpo-ai-deployment-kit:ci .
+
+  heldout:
+    if: github.event_name == 'workflow_dispatch' && inputs.heldout != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - run: scripts/ci-run.sh "uv sync" uv sync --frozen
+      - run: scripts/ci-run.sh "world" uv run cpokit world
+      - run: scripts/ci-run.sh "held-out ${{ inputs.heldout }}" uv run cpokit heldout "${{ inputs.heldout }}"

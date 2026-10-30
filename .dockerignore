@@ -1,0 +1,8 @@
+.venv
+build
+reports
+web
+.git
+tests
+heldout
+docs

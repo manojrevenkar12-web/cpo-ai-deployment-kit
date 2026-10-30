@@ -264,6 +264,8 @@ dependencies = [
     { name = "jinja2" },
     { name = "mcp" },
     { name = "microsoft-agents-activity" },
+    { name = "microsoft-agents-authentication-msal" },
+    { name = "microsoft-agents-hosting-aiohttp" },
     { name = "microsoft-agents-hosting-core" },
     { name = "numpy" },
     { name = "opentelemetry-sdk" },
@@ -294,6 +296,8 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1" },
     { name = "mcp", specifier = ">=2.0" },
     { name = "microsoft-agents-activity", specifier = ">=1.9" },
+    { name = "microsoft-agents-authentication-msal", specifier = ">=1.9" },
+    { name = "microsoft-agents-hosting-aiohttp", specifier = ">=1.9" },
     { name = "microsoft-agents-hosting-core", specifier = ">=1.9" },
     { name = "numpy", specifier = ">=2.2" },
     { name = "opentelemetry-sdk", specifier = ">=1.36" },
@@ -781,6 +785,34 @@ wheels = [
 ]
 
 [[package]]
+name = "microsoft-agents-authentication-msal"
+version = "1.9.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "azure-core" },
+    { name = "microsoft-agents-hosting-core" },
+    { name = "msal" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ba/76/72b8b83728c24eb16cdfb37a384d3115066b5005a95656d7430a025dd623/microsoft_agents_authentication_msal-1.9.0.tar.gz", hash = "sha256:eb8029ec8f8d8afa83a70b09ab8fcebb73a0556c6a9fb74286d4182e5e288480", size = 14956, upload-time = "2026-10-19T17:36:32.899Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9e/b1/188bff86252a8117fac630f0cecb6ef0e94ef33e358931b24a3b841cb7d9/microsoft_agents_authentication_msal-1.9.0-py3-none-any.whl", hash = "sha256:7ede4d953027c24c0dc1ee7a083417cd53dc02b5b92d24c338084d9ac9725956", size = 14278, upload-time = "2026-10-19T17:36:52.629Z" },
+]
+
+[[package]]
+name = "microsoft-agents-hosting-aiohttp"
+version = "1.9.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aiohttp" },
+    { name = "microsoft-agents-hosting-core" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/03/e5/88d9393deb5e8860c0d630f4aa051103adfab1df8cd0456858200770906e/microsoft_agents_hosting_aiohttp-1.9.0.tar.gz", hash = "sha256:4468dced1faa9213b21fbef1b03854d343c730abfc7270084104ecb48d8e7a19", size = 12152, upload-time = "2026-10-19T17:36:35.641Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/38/ca/79ad71d26a3fcf3cca3fe2174f54b2ce3b895f5cdd17aa82066a5ffa493e/microsoft_agents_hosting_aiohttp-1.9.0-py3-none-any.whl", hash = "sha256:96c7145c4b14c835d6a2e2ff6ff81bdb78880a1ad9bf4a957fed06bbe4a07d95", size = 11420, upload-time = "2026-10-19T17:36:55.207Z" },
+]
+
+[[package]]
 name = "microsoft-agents-hosting-core"
 version = "1.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -798,6 +830,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/79/50/5238c20e822e2265ec2b68f99548ad27cd8a206f22d9e60a2d9de44e9e04/microsoft_agents_hosting_core-1.9.0.tar.gz", hash = "sha256:efcb1aeeedd5edebd8b942a65c4a98efb665bab07973d3ce63159368f92b4e17", size = 165490, upload-time = "2026-10-19T17:36:37.173Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/36/3f/e523f89dc314c3217431c576e2285bd5b88941d02a4394a4f13457872f69/microsoft_agents_hosting_core-1.9.0-py3-none-any.whl", hash = "sha256:ef81b0188ed2c06d9a58d9bbc24f4bf7796bcc809286d89a4506735fd1252499", size = 243872, upload-time = "2026-10-19T17:36:56.774Z" },
+]
+
+[[package]]
+name = "msal"
+version = "1.39.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cryptography" },
+    { name = "pyjwt", extra = ["crypto"] },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bb/85/747d28986a44b715cc51cf57aa021c8fd94e9614064261ceec77320e8b0b/msal-1.39.0.tar.gz", hash = "sha256:6ab7de335e6d7f5717e2c7e1dbf86e4dda2f6acf3c56773b78dc53ebc6395b5f", size = 205360, upload-time = "2026-09-17T16:07:45.1Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a4/32/178457385925ce301c7b3232bd85665d4df57da39568b62dcfc74031873f/msal-1.39.0-py3-none-any.whl", hash = "sha256:2d2577886906cd7293850dffa2da29119966c213bfc6ec0cecf8bf7621e1ca77", size = 131629, upload-time = "2026-09-17T16:07:46.722Z" },
 ]
 
 [[package]]

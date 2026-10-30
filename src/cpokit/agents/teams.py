@@ -69,10 +69,34 @@ def _notice(text: str, token: str | None = None) -> dict[str, Any]:
     return card
 
 
-def create_app(desk: TeamsDesk) -> Any:  # pragma: no cover - wiring to the hosting SDK
-    from microsoft_agents.hosting.core import AgentApplication, MemoryStorage, TurnContext, TurnState
+def sdk_config(client_id: str, tenant_id: str, secret: str = "") -> dict[str, Any]:
+    """The Agents SDK's connection settings (from environment variables in production)."""
+    return {
+        "CONNECTIONS": {
+            "SERVICE_CONNECTION": {
+                "SETTINGS": {
+                    "CLIENTID": client_id,
+                    "TENANTID": tenant_id,
+                    "AUTHTYPE": "ClientSecret" if secret else "UserManagedIdentity",
+                    "CLIENTSECRET": secret,
+                }
+            }
+        }
+    }
 
-    app = AgentApplication[TurnState](storage=MemoryStorage())
+
+def create_app(desk: TeamsDesk, config: dict[str, Any]) -> tuple[Any, Any]:
+    """Returns (AgentApplication, CloudAdapter) with the message and Action.Execute routes."""
+    from microsoft_agents.authentication.msal import MsalConnectionManager
+    from microsoft_agents.hosting.aiohttp import CloudAdapter
+    from microsoft_agents.hosting.core import AgentApplication, Authorization, MemoryStorage, TurnContext, TurnState
+
+    connections = MsalConnectionManager(**config)
+    storage = MemoryStorage()
+    adapter = CloudAdapter(connection_manager=connections)
+    app = AgentApplication[TurnState](
+        storage=storage, adapter=adapter, authorization=Authorization(storage, connections, **config), **config
+    )
 
     @app.message()
     async def message(context: TurnContext, state: TurnState) -> None:
@@ -87,4 +111,39 @@ def create_app(desk: TeamsDesk) -> Any:  # pragma: no cover - wiring to the host
     async def reject(context: TurnContext, state: TurnState, data: dict[str, Any]) -> dict[str, Any]:
         return desk.on_card_action(context.activity.from_property.aad_object_id, "reject", data)
 
-    return app
+    return app, adapter
+
+
+def serve(port: int = 3978) -> None:  # pragma: no cover - needs Azure Bot Service credentials
+    """The Teams endpoint (/api/messages) behind Azure Bot Service, on aiohttp."""
+    import json as _json
+    import os
+
+    from aiohttp import web
+    from microsoft_agents.hosting.aiohttp import jwt_authorization_middleware, start_agent_process
+
+    from .. import settings
+    from ..auth import principal_from_claims
+
+    directory = (
+        {p["oid"]: p for p in _json.loads((settings.BUILD / "directory.json").read_text())}
+        if (settings.BUILD / "directory.json").exists()
+        else {}
+    )
+
+    def resolve(aad_object_id: str) -> Principal | None:
+        # production: the user's groups from Microsoft Graph (transitive memberOf); here: the directory
+        entry = directory.get(aad_object_id)
+        return principal_from_claims({"oid": aad_object_id, "groups": entry.get("groups", [])}) if entry else None
+
+    desk = TeamsDesk(Systems(settings.SYSTEMS), KitStore(settings.KIT_DB), resolve)
+    agent, adapter = create_app(
+        desk, sdk_config(os.environ["CLIENT_ID"], os.environ["TENANT_ID"], os.environ.get("CLIENT_SECRET", ""))
+    )
+
+    async def messages(request: web.Request) -> web.Response:
+        return await start_agent_process(request, agent, adapter) or web.Response(status=202)
+
+    app = web.Application(middlewares=[jwt_authorization_middleware])
+    app.router.add_post("/api/messages", messages)
+    web.run_app(app, port=port)

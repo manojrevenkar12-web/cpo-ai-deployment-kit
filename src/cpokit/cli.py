@@ -106,6 +106,14 @@ def serve_api(port: int = 8000) -> None:
     uvicorn.run(create_app(verifier), host="0.0.0.0", port=port)
 
 
+@app.command("serve-teams")
+def serve_teams(port: int = 3978) -> None:
+    """The Teams bot endpoint for Azure Bot Service."""
+    from .agents.teams import serve
+
+    serve(port)
+
+
 @app.command("serve-mcp")
 def serve_mcp(system: str = typer.Argument(..., help="csms | roaming | payments | erp | documents")) -> None:
     """Serve one enterprise system as an MCP server (streamable HTTP, Entra ID tokens)."""

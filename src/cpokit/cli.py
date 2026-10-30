@@ -92,11 +92,18 @@ def power_platform() -> None:
 
 @app.command("serve-api")
 def serve_api(port: int = 8000) -> None:
+    import os
+
+    import httpx
     import uvicorn
 
+    from .auth import Verifier, issuer_url
     from .service.app import create_app
 
-    uvicorn.run(create_app(), host="0.0.0.0", port=port)
+    cfg = settings.access()
+    jwks = os.environ.get("CPOKIT_JWKS_URL", f"https://login.microsoftonline.com/{cfg['tenant']}/discovery/v2.0/keys")
+    verifier = Verifier(httpx.get(jwks, timeout=10).json(), issuer_url(cfg["tenant"]), cfg["audience"])
+    uvicorn.run(create_app(verifier), host="0.0.0.0", port=port)
 
 
 @app.command("serve-mcp")

@@ -5,6 +5,7 @@ approve. Proposals never execute; execution needs the approval token issued to a
 from __future__ import annotations
 
 import json
+import os
 import time
 from typing import Annotated, Any
 
@@ -15,7 +16,7 @@ from .. import settings
 from ..actions import ActionError, execute
 from ..approvals import ApprovalError, Approvals
 from ..auth import Principal, TokenError, Verifier
-from ..kitstore import KitStore
+from ..kitstore import KitStore, PostgresKitStore
 from ..llm.gateway import Gateway, GatewayError
 from ..systems.store import Systems
 from ..usecases import REGISTRY
@@ -56,7 +57,9 @@ def create_app(
         description="Use cases with evals, approvals and measured adoption for a charge point operator.",
     )
     systems = systems or Systems(settings.SYSTEMS)
-    store = store or KitStore(settings.KIT_DB)
+    if store is None:
+        url = os.environ.get("CPOKIT_DATABASE_URL")
+        store = PostgresKitStore(url) if url else KitStore(settings.KIT_DB)
     gateway = gateway or Gateway()
     approvals = Approvals(store)
     app.state.verifier = verifier

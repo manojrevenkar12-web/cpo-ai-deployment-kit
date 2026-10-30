@@ -147,3 +147,112 @@ class KitStore:
         if use_case:
             return self.rows("select * from usage_events where use_case=? order by event_id", (use_case,))
         return self.rows("select * from usage_events order by event_id")
+
+
+class PostgresKitStore:
+    """The same interface on Azure Database for PostgreSQL (schema: sql/kit.sql). Each call runs with
+    the caller's countries set for row-level security; the service account's own jobs use '*'."""
+
+    def __init__(self, url: str, countries: str = "*") -> None:
+        import psycopg
+        from psycopg.rows import dict_row
+
+        self.con = psycopg.connect(url, autocommit=True, row_factory=dict_row)
+        self.con.execute("select set_config('kit.countries', %s, false)", (countries,))
+
+    def rows(self, sql: str, args: tuple[Any, ...] = ()) -> list[dict[str, Any]]:
+        return list(self.con.execute(sql.replace("?", "%s"), args).fetchall())
+
+    def save_proposal(self, p: dict[str, Any]) -> None:
+        with self.con.transaction():
+            self.con.execute(
+                "insert into proposals values (%s,%s,%s,%s,%s,%s,%s,%s,%s) on conflict (proposal_id) do nothing",
+                (
+                    p["proposal_id"],
+                    p["case_id"],
+                    p["use_case"],
+                    p["country"],
+                    p["created_ts"],
+                    p["prepared_by"],
+                    p["decision"],
+                    bool(p["needs_review"]),
+                    json.dumps(p, ensure_ascii=False, default=str),
+                ),
+            )
+            for a in p.get("actions", []):
+                self.con.execute(
+                    "insert into actions values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) on conflict (action_id) do nothing",
+                    (
+                        a["action_id"],
+                        p["proposal_id"],
+                        p["case_id"],
+                        a["kind"],
+                        a.get("amount"),
+                        json.dumps(a["payload"], ensure_ascii=False, sort_keys=True),
+                        a["payload_hash"],
+                        a.get("role"),
+                        a.get("status", "proposed"),
+                        p["created_ts"],
+                    ),
+                )
+
+    def proposal(self, proposal_id: str) -> dict[str, Any] | None:
+        r = self.rows("select payload from proposals where proposal_id=%s", (proposal_id,))
+        return r[0]["payload"] if r else None
+
+    def proposals(self, use_case: str | None = None, limit: int = 200) -> list[dict[str, Any]]:
+        if use_case:
+            rows = self.rows(
+                "select payload from proposals where use_case=%s order by created_ts desc limit %s", (use_case, limit)
+            )
+        else:
+            rows = self.rows("select payload from proposals order by created_ts desc limit %s", (limit,))
+        return [r["payload"] for r in rows]
+
+    def action(self, action_id: str) -> dict[str, Any] | None:
+        r = self.rows("select * from actions where action_id=%s", (action_id,))
+        if not r:
+            return None
+        a = dict(r[0])
+        a["amount"] = float(a["amount"]) if a["amount"] is not None else None
+        return a
+
+    def set_action_status(self, action_id: str, status: str) -> None:
+        self.con.execute("update actions set status=%s where action_id=%s", (status, action_id))
+
+    def record_approval(self, a: dict[str, Any]) -> None:
+        self.con.execute(
+            "insert into approvals values (%s,%s,%s,%s,%s,%s,null)",
+            (a["approval_id"], a["action_id"], a["approver"], a["decided_ts"], a["decision"], a.get("token_id")),
+        )
+
+    def consume(self, token_id: str, ts: int) -> bool:
+        cur = self.con.execute(
+            "update approvals set consumed_ts=%s where token_id=%s and consumed_ts is null", (ts, token_id)
+        )
+        return cur.rowcount == 1
+
+    def event(
+        self,
+        ts: int,
+        use_case: str,
+        case_id: str,
+        country: str,
+        user: str,
+        event: str,
+        value: float | None = None,
+        detail: dict[str, Any] | None = None,
+    ) -> None:
+        self.con.execute(
+            "insert into usage_events (ts, use_case, case_id, country, user_oid, event, value, detail) "
+            "values (%s,%s,%s,%s,%s,%s,%s,%s)",
+            (ts, use_case, case_id, country, user, event, value, json.dumps(detail or {}, ensure_ascii=False)),
+        )
+
+    def commit(self) -> None:
+        return None
+
+    def events(self, use_case: str | None = None) -> list[dict[str, Any]]:
+        if use_case:
+            return self.rows("select * from usage_events where use_case=%s order by event_id", (use_case,))
+        return self.rows("select * from usage_events order by event_id")

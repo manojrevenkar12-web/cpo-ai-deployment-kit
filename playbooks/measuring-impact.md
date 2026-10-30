@@ -6,7 +6,7 @@
 2. **Effect per use:** the rollout effect divided by the share of cases that used the tool.
 3. **Never report the naive comparison as the saving.** Cases handled with the tool against cases without
    overstates it: people keep the tool for easier cases and faster people adopt first. In the simulated
-   deployment the naive figure for driver refunds was about ten points too high.
+   deployment the naive figure for driver refunds was eight points too high (−54% against a true −46% per use).
 4. **Hours saved** come from the same design on minutes, not from a percentage times an average: the
    savings sit on short cases.
 5. **One central team has no control group.** Its before/after change includes whatever else changed

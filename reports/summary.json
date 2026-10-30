@@ -24,9 +24,9 @@
  },
  "deployment": {
   "cases": 2478,
-  "used": 748,
-  "model_calls": 1447,
-  "llm_cost_eur": 0.336
+  "used": 736,
+  "model_calls": 1404,
+  "llm_cost_eur": 0.32
  },
  "gate": true
 }

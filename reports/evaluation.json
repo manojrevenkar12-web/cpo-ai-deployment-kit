@@ -1,156 +1,156 @@
 {
  "cdr_disputes": {
   "rollout_effect": {
-   "estimate_pct": -0.4693,
-   "truth_pct": -0.4762,
+   "estimate_pct": -0.4836,
+   "truth_pct": -0.4723,
    "ci_pct": [
-    -0.5396,
-    -0.3883
+    -0.5583,
+    -0.3962
    ],
    "truth_in_ci": true,
    "method": "interrupted time series (no control group)"
   },
   "per_use_effect": {
-   "estimate_pct": -0.6102,
-   "truth_pct": -0.6177,
-   "naive_pct": -0.6476
+   "estimate_pct": -0.6276,
+   "truth_pct": -0.6154,
+   "naive_pct": -0.6791
   },
   "hours_saved": {
-   "estimate": 100.3,
+   "estimate": 131.6,
    "ci": [
-    64.6,
-    135.9
+    72.5,
+    190.8
    ],
-   "truth": 89.4
+   "truth": 86.0
   },
   "tool_quality": {
-   "used": 191,
-   "correct": 0.9947643979057592,
-   "wrong_caught": 1,
+   "used": 190,
+   "correct": 0.9894736842105263,
+   "wrong_caught": 2,
    "wrong_escaped": 0,
    "over_paid_eur": 0.0
   },
   "manual_quality": {
-   "cases": 205,
-   "wrong": 12
+   "cases": 206,
+   "wrong": 13
   },
   "adoption": {
-   "usage_share_live_reported": 0.6725352112676056,
-   "usage_share_live_truth": 0.6725352112676056
+   "usage_share_live_reported": 0.6690140845070423,
+   "usage_share_live_truth": 0.6690140845070423
   }
  },
  "driver_refunds": {
   "rollout_effect": {
-   "estimate_pct": -0.1979,
-   "truth_pct": -0.2051,
+   "estimate_pct": -0.1982,
+   "truth_pct": -0.2071,
    "ci_pct": [
-    -0.3172,
-    -0.0651
+    -0.332,
+    -0.0716
    ],
    "truth_in_ci": true,
    "method": "staggered difference-in-differences"
   },
   "per_use_effect": {
-   "estimate_pct": -0.4425,
-   "truth_pct": -0.4558,
-   "naive_pct": -0.5503
+   "estimate_pct": -0.4439,
+   "truth_pct": -0.46,
+   "naive_pct": -0.5439
   },
   "hours_saved": {
-   "estimate": 104.7,
+   "estimate": 108.2,
    "ci": [
-    28.7,
-    182.7
+    36.0,
+    193.3
    ],
-   "truth": 62.4
+   "truth": 63.4
   },
   "tool_quality": {
-   "used": 423,
-   "correct": 0.9432624113475178,
-   "wrong_caught": 23,
-   "wrong_escaped": 1,
+   "used": 422,
+   "correct": 0.9549763033175356,
+   "wrong_caught": 19,
+   "wrong_escaped": 0,
    "over_paid_eur": 0.0
   },
   "manual_quality": {
-   "cases": 1399,
-   "wrong": 50
+   "cases": 1400,
+   "wrong": 51
   },
   "adoption": {
-   "usage_share_live_reported": 0.3773416592328278,
-   "usage_share_live_truth": 0.3773416592328278
+   "usage_share_live_reported": 0.37644959857270294,
+   "usage_share_live_truth": 0.37644959857270294
   }
  },
  "site_onboarding": {
   "rollout_effect": {
-   "estimate_pct": -0.4502,
-   "truth_pct": -0.4384,
+   "estimate_pct": -0.4695,
+   "truth_pct": -0.4591,
    "ci_pct": [
-    -0.5938,
-    -0.2559
+    -0.609,
+    -0.2803
    ],
    "truth_in_ci": true,
    "method": "interrupted time series (no control group)"
   },
   "per_use_effect": {
-   "estimate_pct": -0.713,
+   "estimate_pct": -0.7112,
    "truth_pct": -0.7,
-   "naive_pct": -0.7935
+   "naive_pct": -0.8057
   },
   "hours_saved": {
-   "estimate": 21.5,
+   "estimate": 22.4,
    "ci": [
-    -3.6,
-    46.6
+    -2.7,
+    47.5
    ],
-   "truth": 18.0
+   "truth": 19.3
   },
   "tool_quality": {
-   "used": 46,
+   "used": 49,
    "correct": 1.0,
    "wrong_caught": 0,
    "wrong_escaped": 0,
    "over_paid_eur": 0.0
   },
   "manual_quality": {
-   "cases": 74,
+   "cases": 71,
    "wrong": 6
   },
   "adoption": {
-   "usage_share_live_reported": 0.4791666666666667,
-   "usage_share_live_truth": 0.4791666666666667
+   "usage_share_live_reported": 0.5104166666666666,
+   "usage_share_live_truth": 0.5104166666666666
   }
  },
  "tender_answers": {
   "rollout_effect": {
    "estimate_pct": null,
-   "truth_pct": -0.3461,
+   "truth_pct": -0.2859,
    "ci_pct": null,
    "truth_in_ci": null,
    "method": null
   },
   "per_use_effect": {
    "estimate_pct": null,
-   "truth_pct": -0.4913,
-   "naive_pct": -0.5327
+   "truth_pct": -0.4666,
+   "naive_pct": -0.4008
   },
   "hours_saved": {
    "estimate": null,
    "ci": null,
-   "truth": 45.1
+   "truth": 38.8
   },
   "tool_quality": {
-   "used": 88,
-   "correct": 0.875,
-   "wrong_caught": 11,
+   "used": 75,
+   "correct": 0.8266666666666667,
+   "wrong_caught": 13,
    "wrong_escaped": 0,
    "over_paid_eur": 0.0
   },
   "manual_quality": {
-   "cases": 52,
-   "wrong": 7
+   "cases": 65,
+   "wrong": 6
   },
   "adoption": {
-   "usage_share_live_reported": 0.6285714285714286,
-   "usage_share_live_truth": 0.6285714285714286
+   "usage_share_live_reported": 0.5357142857142857,
+   "usage_share_live_truth": 0.5357142857142857
   }
  }
 }

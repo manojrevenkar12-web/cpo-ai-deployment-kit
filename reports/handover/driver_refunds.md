@@ -24,9 +24,9 @@ Models read: ticket.read, ticket.reply. Code decides: which session, refund amou
 
 ## In use
 - 43 of 43 people have used it; 38% of live cases go through it; 95% of proposals accepted.
-- Usage share by training: not trained 16%, trained 51%
-- Handling time per case: -20% (95% interval -32% to -7%), staggered difference-in-differences.
-- Hours saved so far: 105 (interval 29 to 183)
+- Usage share by training: not trained 17%, trained 49%
+- Handling time per case: -20% (95% interval -33% to -7%), staggered difference-in-differences.
+- Hours saved so far: 108 (interval 36 to 193)
 
 ## Known failure modes (from the evals)
 - by_kind: {'double_capture': 0.972, 'no_energy': 0.967, 'preauth_hold': 0.947, 'price_display': 0.969, 'roaming_driver': 0.905, 'stuck_session': 0.978, 'unidentifiable': 1.0, 'valid_charge': 0.926}

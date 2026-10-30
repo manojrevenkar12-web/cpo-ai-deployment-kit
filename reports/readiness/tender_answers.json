@@ -40,18 +40,18 @@
   {
    "check": "cost_per_case_within_alert",
    "passed": true,
-   "detail": "0.00076 EUR per case (alert above 0.05)"
+   "detail": "0.00062 EUR per case (alert above 0.05)"
   }
  ],
  "metrics": {
   "questions": 60,
-  "answer_accuracy": 0.9,
-  "answered_share": 0.7166666666666667,
+  "answer_accuracy": 0.8666666666666667,
+  "answered_share": 0.6833333333333333,
   "stale_value_used": 0,
   "unsupported_answers": 0,
   "missing_cases": 0,
-  "cost_eur": 0.0457,
-  "review_share": 0.2833333333333333
+  "cost_eur": 0.0371,
+  "review_share": 0.31666666666666665
  },
  "priority": 4.0
 }

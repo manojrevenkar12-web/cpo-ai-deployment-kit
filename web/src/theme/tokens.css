@@ -1,0 +1,65 @@
+/* Deployment desk tokens. Cool paper, ink green-black; green means "live and used", copper marks a
+   rollout wave, red a harm, violet the simulator's truth (only knowable because the organisation is
+   simulated). Every colour pair below passes WCAG AA for its use. */
+:root {
+  --paper: #f3f5f4;
+  --panel: #ffffff;
+  --ink: #14211f;
+  --muted: #56635f;
+  --line: #d5ddda;
+  --line-strong: #a9b6b2;
+  --live: #0b7a5c;
+  --live-soft: #d9efe7;
+  --copper: #a95a14;
+  --copper-soft: #f6e7d8;
+  --risk: #b3261e;
+  --risk-soft: #fbe3e1;
+  --truth: #6b4fbb;
+  --focus: #1f5fbf;
+
+  --font: "Schibsted Grotesk", system-ui, sans-serif;
+  --t-xs: 0.8125rem;   /* 13 */
+  --t-sm: 0.9375rem;   /* 15 */
+  --t-md: 1.0625rem;   /* 17 */
+  --t-lg: 1.3125rem;   /* 21 */
+  --t-xl: 1.75rem;     /* 28 */
+  --t-2xl: 2.5rem;     /* 40 */
+  --lh-tight: 1.15;
+  --lh-body: 1.5;
+
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4.5rem;
+
+  --radius-sm: 3px;
+  --radius-md: 8px;
+  --measure: 68ch;
+  --page: 1240px;
+  --gutter: 16px;
+  --cell: 26px;
+  --bar-h: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1715;
+    --panel: #16201e;
+    --ink: #e6ecea;
+    --muted: #9aa9a4;
+    --line: #2a3633;
+    --line-strong: #44524e;
+    --live: #3cc497;
+    --live-soft: #173a30;
+    --copper: #e0954f;
+    --copper-soft: #3b2a1a;
+    --risk: #f2766b;
+    --risk-soft: #3d1d1b;
+    --truth: #a893f0;
+    --focus: #7aa7ff;
+  }
+}

@@ -22,10 +22,10 @@ Models read: site.map. Code decides: validation, AFIR checks, publish or needs a
 - pass: cost_per_case_within_alert (0.00211 EUR per case (alert above 0.05))
 
 ## In use
-- 3 of 4 people have used it; 48% of live cases go through it; 100% of proposals accepted.
-- Usage share by training: not trained 0%, trained 72%
-- Handling time per case: -45% (95% interval -59% to -26%), interrupted time series (no control group).
-- Hours saved so far: 22 (interval -4 to 47)
+- 3 of 4 people have used it; 51% of live cases go through it; 100% of proposals accepted.
+- Usage share by training: not trained 0%, trained 75%
+- Handling time per case: -47% (95% interval -61% to -28%), interrupted time series (no control group).
+- Hours saved so far: 22 (interval -3 to 48)
 
 ## Known failure modes (from the evals)
 - field_errors: {}

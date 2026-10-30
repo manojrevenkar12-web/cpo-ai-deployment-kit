@@ -25,8 +25,8 @@ Models read: dispute.read, dispute.reply. Code decides: which CDR, cause, credit
 ## In use
 - 5 of 5 people have used it; 67% of live cases go through it; 99% of proposals accepted.
 - Usage share by training: not trained 60%, trained 69%
-- Handling time per case: -47% (95% interval -54% to -39%), interrupted time series (no control group).
-- Hours saved so far: 100 (interval 65 to 136)
+- Handling time per case: -48% (95% interval -56% to -40%), interrupted time series (no control group).
+- Hours saved so far: 132 (interval 72 to 191)
 
 ## Known failure modes (from the evals)
 - by_cause: {'duplicate': 0.964, 'energy_mismatch': 1.0, 'idle_fault': 1.0, 'no_error': 1.0, 'peak_window': 1.0, 'tariff_version': 1.0, 'unknown_session': 1.0, 'vat_rate': 1.0}

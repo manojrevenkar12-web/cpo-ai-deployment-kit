@@ -39,8 +39,9 @@ class GatewayError(RuntimeError):
 class Provider(Protocol):
     name: str
 
-    def complete(self, model: str, task: str, messages: list[dict[str, str]], inputs: dict[str, Any],
-                 max_tokens: int) -> tuple[str, int, int]: ...
+    def complete(
+        self, model: str, task: str, messages: list[dict[str, str]], inputs: dict[str, Any], max_tokens: int
+    ) -> tuple[str, int, int]: ...
 
 
 class SimulatedProvider:
@@ -65,7 +66,10 @@ class AnthropicProvider:
     def complete(self, model, task, messages, inputs, max_tokens):
         system = messages[0]["content"]
         msg = self.client.messages.create(
-            model=model, system=system, max_tokens=max_tokens, temperature=0,
+            model=model,
+            system=system,
+            max_tokens=max_tokens,
+            temperature=0,
             messages=[{"role": "user", "content": messages[1]["content"]}],
         )
         text = "".join(getattr(b, "text", "") for b in msg.content)
@@ -90,9 +94,15 @@ class Result:
     quarantined: list[str] = field(default_factory=list)
 
     def summary(self) -> dict[str, Any]:
-        return {"task": self.task, "model": self.model, "cost_eur": round(self.cost_eur, 6),
-                "latency_ms": round(self.latency_ms, 1), "masked": self.masked,
-                "quarantined": len(self.quarantined), "prompt_version": prompts.VERSION}
+        return {
+            "task": self.task,
+            "model": self.model,
+            "cost_eur": round(self.cost_eur, 6),
+            "latency_ms": round(self.latency_ms, 1),
+            "masked": self.masked,
+            "quarantined": len(self.quarantined),
+            "prompt_version": prompts.VERSION,
+        }
 
 
 class Gateway:

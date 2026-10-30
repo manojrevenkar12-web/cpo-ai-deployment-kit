@@ -72,11 +72,37 @@ TABLES = {
     "meter_values": ["session_id", "ts", "wh"],
     "status_events": ["evse_id", "ts", "status", "error_code"],
     "partners": ["partner_id", "name", "lang", "country"],
-    "cdrs": ["cdr_id", "session_id", "partner_id", "evse_id", "site_id", "start_date_time", "end_date_time",
-             "start_ts", "tariff_id", "total_energy_kwh", "peak_energy_kwh", "idle_minutes", "energy_cost",
-             "idle_cost", "total_cost_excl_vat", "vat_rate", "total_cost_incl_vat", "sent_ts"],
-    "payments": ["payment_id", "session_id", "evse_id", "site_id", "type", "amount", "ts", "last4",
-                 "shown_price_per_kwh"],
+    "cdrs": [
+        "cdr_id",
+        "session_id",
+        "partner_id",
+        "evse_id",
+        "site_id",
+        "start_date_time",
+        "end_date_time",
+        "start_ts",
+        "tariff_id",
+        "total_energy_kwh",
+        "peak_energy_kwh",
+        "idle_minutes",
+        "energy_cost",
+        "idle_cost",
+        "total_cost_excl_vat",
+        "vat_rate",
+        "total_cost_incl_vat",
+        "sent_ts",
+    ],
+    "payments": [
+        "payment_id",
+        "session_id",
+        "evse_id",
+        "site_id",
+        "type",
+        "amount",
+        "ts",
+        "last4",
+        "shown_price_per_kwh",
+    ],
     "emails": ["email_id", "sender", "partner_id", "subject", "body", "received_ts", "lang"],
     "tickets": ["ticket_id", "country", "lang", "channel", "sender", "text", "opened_ts"],
     "cases": ["case_id", "use_case", "ref", "country", "opened_ts", "week"],
@@ -258,9 +284,18 @@ class Systems:
     def post_erp(self, posting: dict[str, Any]) -> None:
         self.db.execute(
             "insert into erp_postings values (?,?,?,?,?,?,?,?,?,?)",
-            (posting["posting_id"], posting["kind"], posting["case_id"], posting["ref"], posting["amount"],
-             posting.get("currency", "EUR"), json.dumps(posting.get("payload", {})), posting["approved_by"],
-             posting["approval_id"], posting["posted_ts"]),
+            (
+                posting["posting_id"],
+                posting["kind"],
+                posting["case_id"],
+                posting["ref"],
+                posting["amount"],
+                posting.get("currency", "EUR"),
+                json.dumps(posting.get("payload", {})),
+                posting["approved_by"],
+                posting["approval_id"],
+                posting["posted_ts"],
+            ),
         )
         self.db.commit()
 
@@ -278,18 +313,31 @@ class Systems:
     def log_work(self, rows: list[dict[str, Any]]) -> None:
         self.db.executemany(
             "insert into worklog values (?,?,?,?,?,?,?,?)",
-            [(r["case_id"], r["user_oid"], r["use_case"], r["country"], r["week"], r["minutes"], r["closed_ts"],
-              int(r.get("reopened", 0))) for r in rows],
+            [
+                (
+                    r["case_id"],
+                    r["user_oid"],
+                    r["use_case"],
+                    r["country"],
+                    r["week"],
+                    r["minutes"],
+                    r["closed_ts"],
+                    int(r.get("reopened", 0)),
+                )
+                for r in rows
+            ],
         )
         self.db.commit()
 
     def worklog(self, use_case: str | None = None) -> list[dict[str, Any]]:
-        rows = self._rows("select * from worklog" + (" where use_case=?" if use_case else ""),
-                          (use_case,) if use_case else ())
+        rows = self._rows(
+            "select * from worklog" + (" where use_case=?" if use_case else ""), (use_case,) if use_case else ()
+        )
         return [r for r in rows if self._allowed(r["country"])]
 
-    def publish_location(self, location_id: str, payload: dict[str, Any], approved_by: str, approval_id: str,
-                         ts: int) -> None:
+    def publish_location(
+        self, location_id: str, payload: dict[str, Any], approved_by: str, approval_id: str, ts: int
+    ) -> None:
         self.db.execute(
             "insert or replace into published_locations values (?,?,?,?,?)",
             (location_id, json.dumps(payload), approved_by, approval_id, ts),

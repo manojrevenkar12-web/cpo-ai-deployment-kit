@@ -12,6 +12,7 @@ it checks (that one lives in the simulator); disagreements between the two are w
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from itertools import pairwise
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -23,8 +24,9 @@ def tariff_at(tariffs: list[dict[str, Any]], ts: int) -> dict[str, Any] | None:
     return valid[-1] if valid else None
 
 
-def rerate(sys: Systems, session: dict[str, Any], *, peak_hours: tuple[int, int] = (17, 21),
-           stop_ts: int | None = None) -> dict[str, Any] | None:
+def rerate(
+    sys: Systems, session: dict[str, Any], *, peak_hours: tuple[int, int] = (17, 21), stop_ts: int | None = None
+) -> dict[str, Any] | None:
     evse = sys.evse(session["evse_id"])
     site = sys.site(session["site_id"])
     if evse is None or site is None:
@@ -36,7 +38,7 @@ def rerate(sys: Systems, session: dict[str, Any], *, peak_hours: tuple[int, int]
     tz = ZoneInfo(site["tz"])
     signed_wh = session["meter_stop_wh"] - session["meter_start_wh"]
     peak_wh = 0
-    for a, b in zip(meter, meter[1:], strict=False):
+    for a, b in pairwise(meter):
         mid = (a["ts"] + b["ts"]) // 2
         if peak_hours[0] <= datetime.fromtimestamp(mid, UTC).astimezone(tz).hour < peak_hours[1]:
             peak_wh += b["wh"] - a["wh"]

@@ -36,19 +36,27 @@ def pack(uc: str, ready: dict[str, Any], adoption: dict[str, Any], impact: dict[
         "## In use",
         f"- {a['adopted_people']} of {a['eligible_people']} people have used it; "
         f"{a['usage_share_live']:.0%} of live cases go through it; {a['acceptance']:.0%} of proposals accepted.",
-        f"- Usage share by training: " + ", ".join(
-            f"{'trained' if b['trained'] else 'not trained'} {b['usage_share']:.0%}" for b in a["by_training"]),
+        "- Usage share by training: "
+        + ", ".join(f"{'trained' if b['trained'] else 'not trained'} {b['usage_share']:.0%}" for b in a["by_training"]),
     ]
     if r:
         ci = r.get("ci_pct")
-        lines.append(f"- Handling time per case: {r['pct']:+.0%}"
-                     + (f" (95% interval {ci[0]:+.0%} to {ci[1]:+.0%})" if ci else "") + f", {r['method']}.")
+        lines.append(
+            f"- Handling time per case: {r['pct']:+.0%}"
+            + (f" (95% interval {ci[0]:+.0%} to {ci[1]:+.0%})" if ci else "")
+            + f", {r['method']}."
+        )
     else:
         lines.append(f"- Handling time: {i.get('note', 'not measured')}.")
     if i.get("hours_saved") is not None:
-        lines.append(f"- Hours saved so far: {i['hours_saved']:.0f}"
-                     + (f" (interval {i['hours_saved_ci'][0]:.0f} to {i['hours_saved_ci'][1]:.0f})"
-                        if i.get("hours_saved_ci") else ""))
+        lines.append(
+            f"- Hours saved so far: {i['hours_saved']:.0f}"
+            + (
+                f" (interval {i['hours_saved_ci'][0]:.0f} to {i['hours_saved_ci'][1]:.0f})"
+                if i.get("hours_saved_ci")
+                else ""
+            )
+        )
     m = ready["metrics"]
     lines += [
         "",

@@ -56,8 +56,9 @@ def ready() -> None:
 
 
 @app.command()
-def new(use_case: str, name: str = typer.Option(...), function: str = typer.Option(...),
-        owner: str = typer.Option(...)) -> None:
+def new(
+    use_case: str, name: str = typer.Option(...), function: str = typer.Option(...), owner: str = typer.Option(...)
+) -> None:
     """Start a new use case from the template (spec, code, runbook)."""
     from .kit import scaffold
 

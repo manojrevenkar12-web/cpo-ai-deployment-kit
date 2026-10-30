@@ -21,8 +21,41 @@ from .base import Action, Context, Evidence, Proposal, check_access
 USE_CASE = "tender_answers"
 WORD = re.compile(r"[^\W_][\w'/%.-]*", re.UNICODE)
 NUMBER = re.compile(r"\d[\d.,]*%?")
-STOP = {"the", "a", "of", "and", "to", "in", "is", "our", "we", "for", "with", "on", "at", "by", "as", "are", "all",
-        "il", "la", "di", "e", "le", "i", "per", "con", "dei", "del", "della", "nostro", "nostri", "un", "una", "ai"}
+STOP = {
+    "the",
+    "a",
+    "of",
+    "and",
+    "to",
+    "in",
+    "is",
+    "our",
+    "we",
+    "for",
+    "with",
+    "on",
+    "at",
+    "by",
+    "as",
+    "are",
+    "all",
+    "il",
+    "la",
+    "di",
+    "e",
+    "le",
+    "i",
+    "per",
+    "con",
+    "dei",
+    "del",
+    "della",
+    "nostro",
+    "nostri",
+    "un",
+    "una",
+    "ai",
+}
 
 
 def tokens(text: str) -> list[str]:
@@ -79,7 +112,8 @@ class Library:
         for s, p in hits:
             day = self.docs[p["doc_id"]]["date"]
             newer = [
-                q for q in self.passages
+                q
+                for q in self.passages
                 if q["pid"] != p["pid"] and self.docs[q["doc_id"]]["date"] > day and same_fact(q["text"], p["text"])
             ]
             if newer:
@@ -132,8 +166,9 @@ def run(case: dict[str, Any], ctx: Context) -> Proposal:
     hits = lib.search(keywords)
     kept, dropped = lib.newest_only(hits) if pol["prefer_newest"] else (hits, [])
     for p, newer in dropped:
-        evidence.append(Evidence("superseded passage not used", {"old": p["pid"], "newer": newer["pid"]},
-                                 f"docs:tender/{p['pid']}"))
+        evidence.append(
+            Evidence("superseded passage not used", {"old": p["pid"], "newer": newer["pid"]}, f"docs:tender/{p['pid']}")
+        )
     top = kept[0][0] if kept else 0.0
     answer: dict[str, Any] = {"abstain": True, "sentences": []}
     if top >= pol["min_score"]:
@@ -155,15 +190,37 @@ def run(case: dict[str, Any], ctx: Context) -> Proposal:
     decision = "abstain" if answer["abstain"] else "answer"
     if decision == "abstain":
         reasons.append("the library does not answer this question; a person writes the answer")
-    actions = [Action("send_answer", {"case_id": case["case_id"], "question_id": q["question_id"],
-                                      "answer": answer}, role=pol["approval_role"])] if decision == "answer" else []
+    actions = (
+        [
+            Action(
+                "send_answer",
+                {"case_id": case["case_id"], "question_id": q["question_id"], "answer": answer},
+                role=pol["approval_role"],
+            )
+        ]
+        if decision == "answer"
+        else []
+    )
     text = " ".join(s["text"] for s in answer.get("sentences", []))
     return Proposal(
-        case_id=case["case_id"], use_case=USE_CASE, country=case["country"], decision=decision,
-        detail={"question": q["text"], "answer": text, "cites": [c for s in answer.get("sentences", []) for c in s["cites"]],
-                "score": round(top, 2), "keywords": keywords},
-        evidence=evidence, actions=actions, draft={"language": q["lang"], "text": text} if text else None,
-        needs_review=decision == "abstain" or bool(reasons), review_reasons=reasons,
-        model_calls=ctx.calls(results), quarantined=[], prepared_by=ctx.principal.oid,
+        case_id=case["case_id"],
+        use_case=USE_CASE,
+        country=case["country"],
+        decision=decision,
+        detail={
+            "question": q["text"],
+            "answer": text,
+            "cites": [c for s in answer.get("sentences", []) for c in s["cites"]],
+            "score": round(top, 2),
+            "keywords": keywords,
+        },
+        evidence=evidence,
+        actions=actions,
+        draft={"language": q["lang"], "text": text} if text else None,
+        needs_review=decision == "abstain" or bool(reasons),
+        review_reasons=reasons,
+        model_calls=ctx.calls(results),
+        quarantined=[],
+        prepared_by=ctx.principal.oid,
         created_ts=ctx.now or case["opened_ts"],
     )

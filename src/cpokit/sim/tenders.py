@@ -13,7 +13,11 @@ from .world import Network, rng
 # fact id -> (topic words, [(valid_from, value_en, value_it)], sentence template en, it)
 FACTS: dict[str, dict[str, Any]] = {
     "network_points": {
-        "values": [("2025-03-01", "8,000", "8.000"), ("2025-11-15", "8,500", "8.500"), ("2026-05-20", "9,000", "9.000")],
+        "values": [
+            ("2025-03-01", "8,000", "8.000"),
+            ("2025-11-15", "8,500", "8.500"),
+            ("2026-05-20", "9,000", "9.000"),
+        ],
         "en": "The operator runs more than {v} public charging points.",
         "it": "L'operatore gestisce oltre {v} punti di ricarica pubblici.",
         "q_en": "How many public charging points do you operate today?",
@@ -48,14 +52,26 @@ FACTS: dict[str, dict[str, Any]] = {
         "q_it": "Quale quota dell'energia venduta è rinnovabile?",
     },
     "card_payment": {
-        "values": [("2025-04-13", "contactless debit and credit card terminals", "terminali contactless per carte di debito e credito")],
+        "values": [
+            (
+                "2025-04-13",
+                "contactless debit and credit card terminals",
+                "terminali contactless per carte di debito e credito",
+            )
+        ],
         "en": "All new high-power chargers have {v}, as AFIR requires, besides app, RFID and roaming.",
         "it": "Tutti i nuovi caricatori ad alta potenza dispongono di {v}, come richiesto dall'AFIR, oltre ad app, RFID e roaming.",
         "q_en": "Can drivers pay ad hoc by card at your new high-power chargers?",
         "q_it": "I conducenti possono pagare ad hoc con carta presso i nuovi caricatori ad alta potenza?",
     },
     "hotline": {
-        "values": [("2024-01-10", "24/7 in the local language of all 11 countries", "24/7 nella lingua locale di tutti gli 11 paesi")],
+        "values": [
+            (
+                "2024-01-10",
+                "24/7 in the local language of all 11 countries",
+                "24/7 nella lingua locale di tutti gli 11 paesi",
+            )
+        ],
         "en": "Drivers can reach our hotline {v}.",
         "it": "I conducenti possono contattare il nostro servizio clienti {v}.",
         "q_en": "When and in which languages can drivers reach your hotline?",
@@ -76,21 +92,35 @@ FACTS: dict[str, dict[str, Any]] = {
         "q_it": "Quanti punti di ricarica ad alta potenza aggiungete ogni anno?",
     },
     "mcs": {
-        "values": [("2025-11-26", "about 330 megawatt charging points at 55 sites by 2028", "circa 330 punti di ricarica in megawatt in 55 siti entro il 2028")],
+        "values": [
+            (
+                "2025-11-26",
+                "about 330 megawatt charging points at 55 sites by 2028",
+                "circa 330 punti di ricarica in megawatt in 55 siti entro il 2028",
+            )
+        ],
         "en": "For electric trucks we plan, with partners, {v}.",
         "it": "Per i camion elettrici prevediamo, con i partner, {v}.",
         "q_en": "What are your plans for megawatt charging of trucks?",
         "q_it": "Quali sono i vostri piani per la ricarica in megawatt dei camion?",
     },
     "eichrecht": {
-        "values": [("2024-01-10", "calibration-law compliant meters", "contatori conformi alla legge tedesca sulla taratura")],
+        "values": [
+            ("2024-01-10", "calibration-law compliant meters", "contatori conformi alla legge tedesca sulla taratura")
+        ],
         "en": "All DC chargers in Germany have {v} with signed meter values.",
         "it": "Tutti i caricatori DC in Germania hanno {v} con valori di misura firmati.",
         "q_en": "Are your meters compliant with German calibration law?",
         "q_it": "I vostri contatori sono conformi alla legge tedesca sulla taratura?",
     },
     "nap": {
-        "values": [("2025-04-13", "static and dynamic data to the national access points", "dati statici e dinamici ai punti di accesso nazionali")],
+        "values": [
+            (
+                "2025-04-13",
+                "static and dynamic data to the national access points",
+                "dati statici e dinamici ai punti di accesso nazionali",
+            )
+        ],
         "en": "We publish {v} as AFIR requires.",
         "it": "Pubblichiamo {v} come richiesto dall'AFIR.",
         "q_en": "Do you publish charger data to national access points?",
@@ -106,10 +136,19 @@ FACTS: dict[str, dict[str, Any]] = {
 }
 UNANSWERABLE = [
     ("Are you certified to ISO 50001 energy management?", "Siete certificati ISO 50001 per la gestione dell'energia?"),
-    ("What is the carbon footprint in grams of CO2 per kWh delivered?", "Qual è l'impronta di carbonio in grammi di CO2 per kWh erogato?"),
+    (
+        "What is the carbon footprint in grams of CO2 per kWh delivered?",
+        "Qual è l'impronta di carbonio in grammi di CO2 per kWh erogato?",
+    ),
     ("Do you operate hydrogen refuelling stations?", "Gestite stazioni di rifornimento di idrogeno?"),
-    ("What is the limit of your public liability insurance?", "Qual è il massimale della vostra assicurazione di responsabilità civile?"),
-    ("How many charging sessions did you serve in Italy last year?", "Quante sessioni di ricarica avete servito in Italia l'anno scorso?"),
+    (
+        "What is the limit of your public liability insurance?",
+        "Qual è il massimale della vostra assicurazione di responsabilità civile?",
+    ),
+    (
+        "How many charging sessions did you serve in Italy last year?",
+        "Quante sessioni di ricarica avete servito in Italia l'anno scorso?",
+    ),
 ]
 FILLER = [
     ("en", "Our operations centre monitors every charger around the clock and dispatches field service partners."),
@@ -161,9 +200,15 @@ def library(net: Network) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
                 passages.append({"fact": None, "text": ftext})
         r.shuffle(passages)
         docs.append(
-            {"doc_id": doc_id, "title": title, "date": day, "lang": lang, "kind": kind,
-             "passages": [{"pid": f"{doc_id}#{k + 1}", "text": p["text"]} for k, p in enumerate(passages)],
-             "_facts": [p["fact"] for p in passages]}
+            {
+                "doc_id": doc_id,
+                "title": title,
+                "date": day,
+                "lang": lang,
+                "kind": kind,
+                "passages": [{"pid": f"{doc_id}#{k + 1}", "text": p["text"]} for k, p in enumerate(passages)],
+                "_facts": [p["fact"] for p in passages],
+            }
         )
     # every fact's newest value must be somewhere in the library
     newest_day = {fid: f["values"][-1][0] for fid, f in FACTS.items()}
@@ -172,15 +217,18 @@ def library(net: Network) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         if not holder:
             target = min((d for d in docs if d["date"] >= day and d["lang"] == "en"), key=lambda d: d["date"])
             v = FACTS[fid]["values"][-1]
-            target["passages"].append({"pid": f"{target['doc_id']}#{len(target['passages']) + 1}",
-                                       "text": FACTS[fid]["en"].format(v=v[1])})
+            target["passages"].append(
+                {"pid": f"{target['doc_id']}#{len(target['passages']) + 1}", "text": FACTS[fid]["en"].format(v=v[1])}
+            )
             target["_facts"].append(fid)
     for d in docs:
         d.pop("_facts")
     return docs, [{"fact": fid, "values": f["values"]} for fid, f in FACTS.items()]
 
 
-def questions(net: Network, n: int, weeks: tuple[int, int], stream: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def questions(
+    net: Network, n: int, weeks: tuple[int, int], stream: str
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Returns (questions, truth per question)."""
     cfg = net.cfg["tenders"]
     r = rng("tenders", stream)
@@ -201,6 +249,14 @@ def questions(net: Network, n: int, weeks: tuple[int, int], stream: str) -> tupl
         assert v is not None
         stale = [x[1] for x in f["values"][:-1]] + [x[2] for x in f["values"][:-1]]
         qs.append({"question_id": qid, "lang": lang, "text": f["q_en"] if lang == "en" else f["q_it"], "week": week})
-        truth.append({"question_id": qid, "answerable": True, "fact": fid, "value": v[0], "value_it": v[1],
-                      "stale_values": stale})
+        truth.append(
+            {
+                "question_id": qid,
+                "answerable": True,
+                "fact": fid,
+                "value": v[0],
+                "value_it": v[1],
+                "stale_values": stale,
+            }
+        )
     return qs, truth

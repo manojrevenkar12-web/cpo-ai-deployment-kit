@@ -33,8 +33,10 @@ def readiness(log: Any = print) -> dict[str, Any]:
         r = ready.check(uc, ctx, m)
         out[uc] = r
         _write(f"readiness/{uc}.json", r)
-        log(f"{uc}: {'ready' if r['passed'] else 'NOT READY'} "
-            + ", ".join(c["check"] for c in r["checks"] if not c["passed"]))
+        log(
+            f"{uc}: {'ready' if r['passed'] else 'NOT READY'} "
+            + ", ".join(c["check"] for c in r["checks"] if not c["passed"])
+        )
     return out
 
 
@@ -52,14 +54,26 @@ def gate(rd: dict[str, Any], ev: dict[str, Any]) -> dict[str, Any]:
     checks = []
     if cfg["all_use_cases_ready"]:
         bad = [uc for uc, r in rd.items() if not r["passed"]]
-        checks.append({"id": "all-use-cases-ready", "passed": not bad, "detail": f"not ready: {bad}" if bad else "all ready"})
+        checks.append(
+            {"id": "all-use-cases-ready", "passed": not bad, "detail": f"not ready: {bad}" if bad else "all ready"}
+        )
     moved = sum(e["tool_quality"]["over_paid_eur"] for e in ev.values())
-    checks.append({"id": "no-money-moved-wrongly", "passed": moved <= cfg["max_money_moved_wrongly_eur"],
-                   "detail": f"{moved:.2f} EUR above the right amounts"})
+    checks.append(
+        {
+            "id": "no-money-moved-wrongly",
+            "passed": moved <= cfg["max_money_moved_wrongly_eur"],
+            "detail": f"{moved:.2f} EUR above the right amounts",
+        }
+    )
     if cfg["measurement_truth_in_ci"]:
         miss = [uc for uc, e in ev.items() if e["rollout_effect"]["truth_in_ci"] is False]
-        checks.append({"id": "measurement-covers-truth", "passed": not miss,
-                       "detail": f"interval misses truth: {miss}" if miss else "every reported interval contains the truth"})
+        checks.append(
+            {
+                "id": "measurement-covers-truth",
+                "passed": not miss,
+                "detail": f"interval misses truth: {miss}" if miss else "every reported interval contains the truth",
+            }
+        )
     return {"passed": all(c["passed"] for c in checks), "checks": checks}
 
 

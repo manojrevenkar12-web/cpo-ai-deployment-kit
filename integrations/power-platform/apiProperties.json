@@ -1,0 +1,24 @@
+{
+ "properties": {
+  "connectionParameters": {
+   "token": {
+    "type": "oauthSetting",
+    "oAuthSettings": {
+     "identityProvider": "aad",
+     "clientId": "<app registration client id>",
+     "scopes": [
+      "api://cpo-ai-deployment-kit/user_impersonation"
+     ],
+     "redirectMode": "GlobalPerConnector",
+     "properties": {
+      "IsFirstParty": "False",
+      "AzureActiveDirectoryResourceId": "api://cpo-ai-deployment-kit"
+     }
+    }
+   }
+  },
+  "iconBrandColor": "#0F4C5C",
+  "capabilities": [],
+  "publisher": "AI Unit"
+ }
+}

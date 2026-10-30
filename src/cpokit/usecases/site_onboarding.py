@@ -18,8 +18,14 @@ from .base import Action, Context, Evidence, Proposal, check_access
 USE_CASE = "site_onboarding"
 FORMAT = {"IEC_62196_T2_COMBO": "CABLE", "IEC_62196_T2": "SOCKET", "CHADEMO": "CABLE"}
 POWER_TYPE = {"IEC_62196_T2_COMBO": "DC", "IEC_62196_T2": "AC_3_PHASE", "CHADEMO": "DC"}
-NEEDS_PERSON = {"missing_postal_code", "conflicting_power", "no_card_terminal", "missing_coordinates",
-                "coordinates_outside_country", "no_connectors"}
+NEEDS_PERSON = {
+    "missing_postal_code",
+    "conflicting_power",
+    "no_card_terminal",
+    "missing_coordinates",
+    "coordinates_outside_country",
+    "no_connectors",
+}
 
 
 def build_location(m: dict[str, Any], pol: dict[str, Any]) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -42,9 +48,14 @@ def build_location(m: dict[str, Any], pol: dict[str, Any]) -> tuple[dict[str, An
     connectors = []
     for c in m.get("connectors", []):
         for _ in range(int(c["count"])):
-            connectors.append({"standard": c["standard"], "format": FORMAT[c["standard"]],
-                               "power_type": POWER_TYPE[c["standard"]],
-                               "max_electric_power": int(round(c["power_kw"] * 1000))})
+            connectors.append(
+                {
+                    "standard": c["standard"],
+                    "format": FORMAT[c["standard"]],
+                    "power_type": POWER_TYPE[c["standard"]],
+                    "max_electric_power": int(round(c["power_kw"] * 1000)),
+                }
+            )
     if not connectors:
         issues.append("no_connectors")
     max_kw = m.get("max_power_kw") or 0
@@ -59,9 +70,14 @@ def build_location(m: dict[str, Any], pol: dict[str, Any]) -> tuple[dict[str, An
     if m.get("open_24_7"):
         hours: dict[str, Any] = {"twentyfourseven": True}
     elif m.get("hours"):
-        hours = {"twentyfourseven": False, "regular_hours": [
-            {"weekday": d, "period_begin": h["open"], "period_end": h["close"]} for h in m["hours"] for d in h["weekdays"]
-        ]}
+        hours = {
+            "twentyfourseven": False,
+            "regular_hours": [
+                {"weekday": d, "period_begin": h["open"], "period_end": h["close"]}
+                for h in m["hours"]
+                for d in h["weekdays"]
+            ],
+        }
     else:
         hours = {}
         issues.append("missing_opening_hours")
@@ -72,7 +88,9 @@ def build_location(m: dict[str, Any], pol: dict[str, Any]) -> tuple[dict[str, An
         "city": m.get("city"),
         "postal_code": m.get("postal_code"),
         "country_code": "IT",
-        "coordinates": {"latitude": f"{lat:.5f}", "longitude": f"{lon:.5f}"} if lat is not None and lon is not None else None,
+        "coordinates": {"latitude": f"{lat:.5f}", "longitude": f"{lon:.5f}"}
+        if lat is not None and lon is not None
+        else None,
         "connectors": connectors,
         "opening_times": hours,
         "card_payment": bool(m.get("card_payment")) or not rapid,
@@ -90,20 +108,40 @@ def run(case: dict[str, Any], ctx: Context) -> Proposal:
     evidence = [Evidence("export rows", len(rows), f"docs:site_rows/{code}")]
     if len(rows) > 1:
         evidence.append(Evidence("duplicate rows merged", len(rows), f"docs:site_rows/{code}"))
-    source: dict[str, Any] = {"row": {k: v for k, v in rows[0].items() if not k.startswith("_") and k != "row_no"}} \
-        if rows else {"protocol": docs[0]["text"]} if docs else {}
+    source: dict[str, Any] = (
+        {"row": {k: v for k, v in rows[0].items() if not k.startswith("_") and k != "row_no"}}
+        if rows
+        else {"protocol": docs[0]["text"]}
+        if docs
+        else {}
+    )
     if not source:
         raise LookupError(code)
     if "protocol" in source:
-        evidence.append(Evidence("commissioning protocol", docs[0]["doc_id"], f"docs:site_documents/{docs[0]['doc_id']}"))
+        evidence.append(
+            Evidence("commissioning protocol", docs[0]["doc_id"], f"docs:site_documents/{docs[0]['doc_id']}")
+        )
     try:
         r = ctx.gateway.call("site.map", source)
         results.append(r)
         mapped = r.output
     except GatewayError as e:
-        return Proposal(case["case_id"], USE_CASE, case["country"], "review", {"error": str(e)}, evidence, [], None,
-                        True, [f"the row could not be mapped: {e}"], [], [], ctx.principal.oid,
-                        created_ts=ctx.now or case["opened_ts"])
+        return Proposal(
+            case["case_id"],
+            USE_CASE,
+            case["country"],
+            "review",
+            {"error": str(e)},
+            evidence,
+            [],
+            None,
+            True,
+            [f"the row could not be mapped: {e}"],
+            [],
+            [],
+            ctx.principal.oid,
+            created_ts=ctx.now or case["opened_ts"],
+        )
     mapped["site_code"] = mapped.get("site_code") or code
     loc, issues, fixes = build_location(mapped, pol)
     if fixes:
@@ -113,13 +151,22 @@ def run(case: dict[str, Any], ctx: Context) -> Proposal:
         reasons += [f"needs a person: {i}" for i in blocking]
     actions = []
     if not blocking:
-        actions.append(Action("publish_location", {"case_id": case["case_id"], "location": loc},
-                               role="integration_lead"))
+        actions.append(
+            Action("publish_location", {"case_id": case["case_id"], "location": loc}, role="integration_lead")
+        )
     return Proposal(
-        case_id=case["case_id"], use_case=USE_CASE, country=case["country"],
+        case_id=case["case_id"],
+        use_case=USE_CASE,
+        country=case["country"],
         decision="publish" if not blocking else "needs_person",
         detail={"location": loc, "issues": issues, "fixes": fixes, "mapped": mapped},
-        evidence=evidence, actions=actions, draft=None, needs_review=bool(blocking), review_reasons=reasons,
-        model_calls=ctx.calls(results), quarantined=[], prepared_by=ctx.principal.oid,
+        evidence=evidence,
+        actions=actions,
+        draft=None,
+        needs_review=bool(blocking),
+        review_reasons=reasons,
+        model_calls=ctx.calls(results),
+        quarantined=[],
+        prepared_by=ctx.principal.oid,
         created_ts=ctx.now or case["opened_ts"],
     )

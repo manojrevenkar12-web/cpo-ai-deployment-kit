@@ -16,11 +16,29 @@ EVSE = re.compile(r"\b[A-Z]{2}\*[A-Z0-9]{3}\*E\d{4}\*\d+\b")
 CDR = re.compile(r"\bCDR-[A-Z]{2}-\d{6,8}\b")
 SESSION = re.compile(r"\b(?:HUB-)?[A-Z]{2}-S\d{7}\b")
 ISO_UTC = re.compile(r"\b(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::\d{2})?Z\b")
-MONTHS = {m: i + 1 for i, m in enumerate(
-    ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november",
-     "december"])}
+MONTHS = {
+    m: i + 1
+    for i, m in enumerate(
+        [
+            "january",
+            "february",
+            "march",
+            "april",
+            "may",
+            "june",
+            "july",
+            "august",
+            "september",
+            "october",
+            "november",
+            "december",
+        ]
+    )
+}
 DAY_MONTH_TIME = re.compile(
-    r"\b(\d{1,2}) (" + "|".join(m.capitalize() for m in MONTHS) + r")(?: at about| around)? (\d{1,2}):(\d{2})(?: ?(am|pm))?",
+    r"\b(\d{1,2}) ("
+    + "|".join(m.capitalize() for m in MONTHS)
+    + r")(?: at about| around)? (\d{1,2}):(\d{2})(?: ?(am|pm))?",
     re.IGNORECASE,
 )
 NUMERIC_DT = re.compile(r"\b(\d{1,2})[./](\d{1,2})[./]?(\d{4})? (\d{1,2}):(\d{2})\b")
@@ -28,8 +46,18 @@ ISO_LOCAL = re.compile(r"\b(\d{4})-(\d{2})-(\d{2}) (\d{1,2}):(\d{2})\b")
 AMOUNT = re.compile(r"(\d+(?:[.,]\d{1,2})?)\s?EUR")
 CLAIM_WORDS = {
     "twice": ["twice", "doppelt", "due volte", "två gånger", "dvakrát"],
-    "idle": ["idle fee", "blockiergebühr", "tariffa di sosta", "parkeringsavgift", "blokování", "unplug", "abziehen",
-             "staccare", "koppla ur", "odpojit"],
+    "idle": [
+        "idle fee",
+        "blockiergebühr",
+        "tariffa di sosta",
+        "parkeringsavgift",
+        "blokování",
+        "unplug",
+        "abziehen",
+        "staccare",
+        "koppla ur",
+        "odpojit",
+    ],
     "vat": ["vat", "mehrwertsteuer", "iva", "moms", "dph"],
     "energy": ["energy is higher", "energiemenge", "l'energia", "energimängden", "množství energie"],
     "unknown": ["not theirs", "nicht von ihm", "non è sua", "inte är deras", "neprovedl"],
@@ -52,27 +80,89 @@ CARD_RX = re.compile(
     r"(?:Card ending|Karte endet auf|Carta che termina con|Kaart eindigend op|Kortet slutar på|Kortet ender på|"
     r"Karta kończy się na|Karta končí na|A kártya végződése|Cardul se termină în) (\d{4})"
 )
-APP_RX = re.compile(r"(?:My|Meine|Mijn|Min|A) (\w+)[- ](?:app|App|alkalmazás)|(?:L'app|Aplikacja|Aplikace|Aplicația) (\w+)")
+APP_RX = re.compile(
+    r"(?:My|Meine|Mijn|Min|A) (\w+)[- ](?:app|App|alkalmazás)|(?:L'app|Aplikacja|Aplikace|Aplicația) (\w+)"
+)
 ADDR_RX = re.compile(
     r"(?:station at|Station in der|stazione in|station aan de|stationen på|stacja przy|stanice|stația de pe) "
     r"([^,\n]+? \d+), ([^,\n]+),"
 )
 ADDR_HU = re.compile(r"A ([^,\n]+? \d+) alatti töltő volt, ([^,\n]+),")
 INTENT_WORDS = {
-    "double_capture": ["two payments", "zwei abbuchungen", "due pagamenti", "twee betalingen", "två betalningar",
-                       "to betalinger", "dwie płatności", "dvě platby", "két", "două plăți"],
-    "preauth_hold": ["blocked", "blockiert", "bloccati", "geblokkeerd", "reserverade", "reserveret", "zablokowane",
-                     "blokováno", "zárolva", "blocați"],
-    "stuck_session": ["unplugged", "abgezogen", "staccato", "stekker eruit", "kopplade ur", "tog stikket",
-                      "odłączyłem", "odpojil", "kihúztam", "am scos"],
+    "double_capture": [
+        "two payments",
+        "zwei abbuchungen",
+        "due pagamenti",
+        "twee betalingen",
+        "två betalningar",
+        "to betalinger",
+        "dwie płatności",
+        "dvě platby",
+        "két",
+        "două plăți",
+    ],
+    "preauth_hold": [
+        "blocked",
+        "blockiert",
+        "bloccati",
+        "geblokkeerd",
+        "reserverade",
+        "reserveret",
+        "zablokowane",
+        "blokováno",
+        "zárolva",
+        "blocați",
+    ],
+    "stuck_session": [
+        "unplugged",
+        "abgezogen",
+        "staccato",
+        "stekker eruit",
+        "kopplade ur",
+        "tog stikket",
+        "odłączyłem",
+        "odpojil",
+        "kihúztam",
+        "am scos",
+    ],
     "price_display": ["terminal", "terminale"],
     "roaming_driver": ["app"],
-    "no_energy": ["did not charge", "nicht geladen", "non si è caricata", "niet geladen", "laddades inte",
-                  "ladede slet ikke", "nie naładował", "nenabilo", "nem töltődött", "nu s-a încărcat"],
-    "unidentifiable": ["something went wrong", "etwas schiefgelaufen", "qualcosa è andato storto", "iets mis",
-                       "något gick fel", "noget gik galt", "coś poszło", "něco pokazilo", "valami hiba", "ceva n-a mers"],
-    "valid_charge": ["too expensive", "zu teuer", "troppi", "te duur", "för dyrt", "for dyrt", "za drogo",
-                     "příliš drahé", "túl drága", "prea scump"],
+    "no_energy": [
+        "did not charge",
+        "nicht geladen",
+        "non si è caricata",
+        "niet geladen",
+        "laddades inte",
+        "ladede slet ikke",
+        "nie naładował",
+        "nenabilo",
+        "nem töltődött",
+        "nu s-a încărcat",
+    ],
+    "unidentifiable": [
+        "something went wrong",
+        "etwas schiefgelaufen",
+        "qualcosa è andato storto",
+        "iets mis",
+        "något gick fel",
+        "noget gik galt",
+        "coś poszło",
+        "něco pokazilo",
+        "valami hiba",
+        "ceva n-a mers",
+    ],
+    "valid_charge": [
+        "too expensive",
+        "zu teuer",
+        "troppi",
+        "te duur",
+        "för dyrt",
+        "for dyrt",
+        "za drogo",
+        "příliš drahé",
+        "túl drága",
+        "prea scump",
+    ],
 }
 
 
@@ -134,15 +224,17 @@ def dispute_read(inp: dict[str, Any]) -> dict[str, Any]:
         claimed = _num(amounts[-1]) if amounts else None
         if "|" in line:  # table: the billed column is not a claim
             claimed = None
-        items.append({
-            "cdr_id": cdrs[0] if cdrs else None,
-            "session_ref": sessions[0] if sessions else None,
-            "evse_id": evses[0] if evses else None,
-            "local_time": None if utc else (local[0] if local else None),
-            "utc_time": f"{utc.group(1)}T{utc.group(2)}:00Z" if utc else None,
-            "claimed_eur": claimed,
-            "claim": _claim(line),
-        })
+        items.append(
+            {
+                "cdr_id": cdrs[0] if cdrs else None,
+                "session_ref": sessions[0] if sessions else None,
+                "evse_id": evses[0] if evses else None,
+                "local_time": None if utc else (local[0] if local else None),
+                "utc_time": f"{utc.group(1)}T{utc.group(2)}:00Z" if utc else None,
+                "claimed_eur": claimed,
+                "claim": _claim(line),
+            }
+        )
     return {"language": detect_language(text), "items": items}
 
 
@@ -226,8 +318,13 @@ def _hours(text: str) -> tuple[bool | None, list[dict[str, Any]]]:
             continue
         a = DAYS[m.group(1)]
         b = DAYS.get(m.group(2) or m.group(1), a)
-        out.append({"weekdays": list(range(a, b + 1)), "open": f"{int(m.group(3)):02d}:{m.group(4) or '00'}",
-                    "close": f"{int(m.group(5)):02d}:{m.group(6) or '00'}"})
+        out.append(
+            {
+                "weekdays": list(range(a, b + 1)),
+                "open": f"{int(m.group(3)):02d}:{m.group(4) or '00'}",
+                "close": f"{int(m.group(5)):02d}:{m.group(6) or '00'}",
+            }
+        )
     return (False, out) if out else (None, [])
 
 
@@ -291,20 +388,98 @@ def _protocol_fields(text: str) -> dict[str, str]:
     return out
 
 
-STOP = {"the", "a", "an", "do", "you", "your", "what", "how", "many", "which", "is", "are", "of", "for", "to", "in",
-        "at", "can", "and", "when", "today", "per", "with", "il", "la", "le", "i", "di", "per", "che", "quale", "quali",
-        "quanti", "quante", "siete", "avete", "vostri", "vostra", "vostro", "sono", "del", "dei", "ai", "al", "con"}
+STOP = {
+    "the",
+    "a",
+    "an",
+    "do",
+    "you",
+    "your",
+    "what",
+    "how",
+    "many",
+    "which",
+    "is",
+    "are",
+    "of",
+    "for",
+    "to",
+    "in",
+    "at",
+    "can",
+    "and",
+    "when",
+    "today",
+    "per",
+    "with",
+    "il",
+    "la",
+    "le",
+    "i",
+    "di",
+    "che",
+    "quale",
+    "quali",
+    "quanti",
+    "quante",
+    "siete",
+    "avete",
+    "vostri",
+    "vostra",
+    "vostro",
+    "sono",
+    "del",
+    "dei",
+    "ai",
+    "al",
+    "con",
+}
 IT_EN = {
-    "punti": "points", "ricarica": "charging", "pubblici": "public", "gestite": "operate", "paesi": "countries",
-    "disponibilità": "availability", "garantite": "commitment", "caricatori": "chargers", "potenza": "power",
-    "alta": "high-power", "tempo": "time", "intervento": "technician site", "guasti": "fault", "energia": "electricity",
-    "rinnovabile": "renewable", "venduta": "sold", "pagare": "card", "carta": "card", "conducenti": "drivers",
-    "servizio": "hotline", "clienti": "hotline", "lingue": "languages", "certificazione": "certified",
-    "sicurezza": "security", "informazioni": "information", "aggiungete": "add", "anno": "year", "camion": "trucks",
-    "megawatt": "megawatt", "contatori": "meters", "taratura": "calibration", "tedesca": "german",
-    "pubblicate": "publish", "dati": "data", "accesso": "access", "nazionali": "national", "persone": "people",
-    "impiega": "employs", "azienda": "company", "idrogeno": "hydrogen", "assicurazione": "insurance",
-    "sessioni": "sessions", "impronta": "carbon footprint", "carbonio": "carbon", "massimale": "limit",
+    "punti": "points",
+    "ricarica": "charging",
+    "pubblici": "public",
+    "gestite": "operate",
+    "paesi": "countries",
+    "disponibilità": "availability",
+    "garantite": "commitment",
+    "caricatori": "chargers",
+    "potenza": "power",
+    "alta": "high-power",
+    "tempo": "time",
+    "intervento": "technician site",
+    "guasti": "fault",
+    "energia": "electricity",
+    "rinnovabile": "renewable",
+    "venduta": "sold",
+    "pagare": "card",
+    "carta": "card",
+    "conducenti": "drivers",
+    "servizio": "hotline",
+    "clienti": "hotline",
+    "lingue": "languages",
+    "certificazione": "certified",
+    "sicurezza": "security",
+    "informazioni": "information",
+    "aggiungete": "add",
+    "anno": "year",
+    "camion": "trucks",
+    "megawatt": "megawatt",
+    "contatori": "meters",
+    "taratura": "calibration",
+    "tedesca": "german",
+    "pubblicate": "publish",
+    "dati": "data",
+    "accesso": "access",
+    "nazionali": "national",
+    "persone": "people",
+    "impiega": "employs",
+    "azienda": "company",
+    "idrogeno": "hydrogen",
+    "assicurazione": "insurance",
+    "sessioni": "sessions",
+    "impronta": "carbon footprint",
+    "carbonio": "carbon",
+    "massimale": "limit",
 }
 
 

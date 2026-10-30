@@ -35,10 +35,20 @@ CITIES: dict[str, list[tuple[str, float, float]]] = {
         ("Nürnberg", 49.45, 11.08),
     ],
     "DK": [("København", 55.68, 12.57), ("Aarhus", 56.16, 10.20), ("Odense", 55.40, 10.39)],
-    "GB": [("London", 51.51, -0.13), ("Birmingham", 52.49, -1.89), ("Manchester", 53.48, -2.24), ("Leeds", 53.80, -1.55)],
+    "GB": [
+        ("London", 51.51, -0.13),
+        ("Birmingham", 52.49, -1.89),
+        ("Manchester", 53.48, -2.24),
+        ("Leeds", 53.80, -1.55),
+    ],
     "HU": [("Budapest", 47.50, 19.04), ("Győr", 47.69, 17.63), ("Debrecen", 47.53, 21.63)],
     "IT": [("Milano", 45.46, 9.19), ("Torino", 45.07, 7.69), ("Bologna", 44.49, 11.34), ("Verona", 45.44, 10.99)],
-    "NL": [("Amsterdam", 52.37, 4.90), ("Rotterdam", 51.92, 4.48), ("Utrecht", 52.09, 5.12), ("Eindhoven", 51.44, 5.47)],
+    "NL": [
+        ("Amsterdam", 52.37, 4.90),
+        ("Rotterdam", 51.92, 4.48),
+        ("Utrecht", 52.09, 5.12),
+        ("Eindhoven", 51.44, 5.47),
+    ],
     "PL": [("Warszawa", 52.23, 21.01), ("Kraków", 50.06, 19.94), ("Poznań", 52.41, 16.93)],
     "RO": [("București", 44.43, 26.10), ("Cluj-Napoca", 46.77, 23.60), ("Timișoara", 45.76, 21.23)],
     "SE": [("Stockholm", 59.33, 18.07), ("Göteborg", 57.71, 11.97), ("Malmö", 55.60, 13.00)],
@@ -172,8 +182,12 @@ class Network:
                 for kind in kinds:
                     t = net["tariffs"][kind]
                     base = TariffVersion(
-                        f"T-{sid}-{kind}-v1", self.history_start - 400 * DAY, t["energy"], t["peak"],
-                        t["idle_per_min"], t["idle_grace_min"],
+                        f"T-{sid}-{kind}-v1",
+                        self.history_start - 400 * DAY,
+                        t["energy"],
+                        t["peak"],
+                        t["idle_per_min"],
+                        t["idle_grace_min"],
                     )
                     versions = [base]
                     ch = net["tariff_change"]
@@ -182,8 +196,12 @@ class Network:
                         when = self.t0 + int(r.integers(ch["window_days"][0], ch["window_days"][1])) * DAY
                         versions.append(
                             TariffVersion(
-                                f"T-{sid}-{kind}-v2", when, round(base.energy + up, 2), round(base.peak + up, 2),
-                                base.idle_per_min, base.idle_grace_min,
+                                f"T-{sid}-{kind}-v2",
+                                when,
+                                round(base.energy + up, 2),
+                                round(base.peak + up, 2),
+                                base.idle_per_min,
+                                base.idle_grace_min,
                             )
                         )
                     s.tariffs[kind] = versions
@@ -238,8 +256,20 @@ class Network:
             statuses.append((charge_end + 120, "Faulted", "ConnectorLockFailure"))
         statuses.append((stop, "Available", ""))
         sid = f"{site.country}-S{self._n_sessions:07d}"
-        s = Session(sid, evse.evse_id, site.site_id, start, stop, charge_end, energy_wh, meter_start, meter,
-                    statuses, token, lock_fault)
+        s = Session(
+            sid,
+            evse.evse_id,
+            site.site_id,
+            start,
+            stop,
+            charge_end,
+            energy_wh,
+            meter_start,
+            meter,
+            statuses,
+            token,
+            lock_fault,
+        )
         self.sessions[sid] = s
         return s
 
@@ -265,16 +295,26 @@ def peak_energy_wh(s: Session, tz: str | None) -> int:
     prev_t, prev_v = s.meter[0]
     for t, v in s.meter[1:]:
         mid = (prev_t + t) // 2
-        hour = (datetime.fromtimestamp(mid, UTC).astimezone(ZoneInfo(tz)) if tz else datetime.fromtimestamp(mid, UTC)).hour
+        hour = (
+            datetime.fromtimestamp(mid, UTC).astimezone(ZoneInfo(tz)) if tz else datetime.fromtimestamp(mid, UTC)
+        ).hour
         if 17 <= hour < 21:
             total += v - prev_v
         prev_t, prev_v = t, v
     return total
 
 
-def bill(net: Network, s: Session, *, tariff_early: bool = False, utc_periods: bool = False,
-         vat: float | None = None, energy_wh: int | None = None, idle_on_fault: bool = False,
-         stop: int | None = None) -> dict[str, Any]:
+def bill(
+    net: Network,
+    s: Session,
+    *,
+    tariff_early: bool = False,
+    utc_periods: bool = False,
+    vat: float | None = None,
+    energy_wh: int | None = None,
+    idle_on_fault: bool = False,
+    stop: int | None = None,
+) -> dict[str, Any]:
     """The CDR the operator should send (no flags), or the one a billing bug produces."""
     evse = net.evses[s.evse_id]
     site = net.sites[s.site_id]

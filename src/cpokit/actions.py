@@ -15,8 +15,9 @@ class ActionError(RuntimeError):
     pass
 
 
-def execute(action_id: str, payload: dict[str, Any], token: str, systems: Systems, approvals: Approvals,
-            now: int | None = None) -> dict[str, Any]:
+def execute(
+    action_id: str, payload: dict[str, Any], token: str, systems: Systems, approvals: Approvals, now: int | None = None
+) -> dict[str, Any]:
     a = approvals.store.action(action_id)
     if a is None:
         raise ActionError("no such action")
@@ -25,9 +26,15 @@ def execute(action_id: str, payload: dict[str, Any], token: str, systems: System
     kind = a["kind"]
     if kind in ("credit_note", "refund"):
         posting = {
-            "posting_id": f"ERP-{uuid.uuid4().hex[:10]}", "kind": kind, "case_id": payload["case_id"],
-            "ref": payload.get("cdr_id") or payload.get("session_id"), "amount": payload["amount_eur"],
-            "payload": payload, "approved_by": body["by"], "approval_id": body["aid"], "posted_ts": ts,
+            "posting_id": f"ERP-{uuid.uuid4().hex[:10]}",
+            "kind": kind,
+            "case_id": payload["case_id"],
+            "ref": payload.get("cdr_id") or payload.get("session_id"),
+            "amount": payload["amount_eur"],
+            "payload": payload,
+            "approved_by": body["by"],
+            "approval_id": body["aid"],
+            "posted_ts": ts,
         }
         systems.post_erp(posting)
         return {"posted": posting["posting_id"]}

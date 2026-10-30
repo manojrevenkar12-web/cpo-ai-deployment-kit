@@ -27,12 +27,24 @@ from ..usecases.base import Context, NotAllowed
 from .build import _label
 from .world import org, rng
 
-FUNCTION = {"cdr_disputes": "roaming_finance", "driver_refunds": "customer_service",
-            "site_onboarding": "integration_ops", "tender_answers": "bid_team"}
-TEAM = {"roaming_finance": "roaming_finance", "customer_service": "customer_service",
-        "integration_ops": "integration_ops", "bid_team": "bid_team"}
-APPROVER_ROLE = {"cdr_disputes": "finance_approver", "driver_refunds": "cs_lead", "site_onboarding": "integration_lead",
-                 "tender_answers": "bid_manager"}
+FUNCTION = {
+    "cdr_disputes": "roaming_finance",
+    "driver_refunds": "customer_service",
+    "site_onboarding": "integration_ops",
+    "tender_answers": "bid_team",
+}
+TEAM = {
+    "roaming_finance": "roaming_finance",
+    "customer_service": "customer_service",
+    "integration_ops": "integration_ops",
+    "bid_team": "bid_team",
+}
+APPROVER_ROLE = {
+    "cdr_disputes": "finance_approver",
+    "driver_refunds": "cs_lead",
+    "site_onboarding": "integration_lead",
+    "tender_answers": "bid_manager",
+}
 
 
 class Person:
@@ -86,8 +98,16 @@ def run(log: Any = print) -> dict[str, Any]:
     gateway = Gateway(clock=lambda: clock["now"])
     truth = {t["case_id"]: t for t in json.loads((settings.TRUTH / "cases.json").read_text())}
     staff = people()
-    approver = {uc: Principal(f"approver-{uc}", f"approver-{uc}", frozenset({FUNCTION[uc]}), frozenset({"*"}),
-                              frozenset({APPROVER_ROLE[uc]})) for uc in FUNCTION}
+    approver = {
+        uc: Principal(
+            f"approver-{uc}",
+            f"approver-{uc}",
+            frozenset({FUNCTION[uc]}),
+            frozenset({"*"}),
+            frozenset({APPROVER_ROLE[uc]}),
+        )
+        for uc in FUNCTION
+    }
     r = rng("deployment")
     rows: list[dict[str, Any]] = []
     worklog: list[dict[str, Any]] = []
@@ -102,8 +122,13 @@ def run(log: Any = print) -> dict[str, Any]:
                 person = local[int(r.integers(len(local)))]
                 complexity = float(t["complexity"])
                 summer = 1 + pc["summer_load"] if 5 <= week <= 13 else 1.0
-                t0_min = (pc["handling_minutes"][uc] * person.speed * summer
-                          * math.exp(r.normal(0, pc["minutes_sd"])) * (1 + pc["complexity_effect"] * complexity))
+                t0_min = (
+                    pc["handling_minutes"][uc]
+                    * person.speed
+                    * summer
+                    * math.exp(r.normal(0, pc["minutes_sd"]))
+                    * (1 + pc["complexity_effect"] * complexity)
+                )
                 eligible = case["country"] in live
                 used = False
                 correct = manual_ok = None
@@ -112,8 +137,13 @@ def run(log: Any = print) -> dict[str, Any]:
                 minutes = t0_min
                 if eligible:
                     speed_z = math.log(person.speed) / pc["speed_sd"]
-                    x = (ad["intercept"] + ad["trust"] * person.trust + ad["trained"] * person.trained
-                         + ad["complexity"] * complexity + ad["speed"] * (-speed_z))
+                    x = (
+                        ad["intercept"]
+                        + ad["trust"] * person.trust
+                        + ad["trained"] * person.trained
+                        + ad["complexity"] * complexity
+                        + ad["speed"] * (-speed_z)
+                    )
                     used = bool(r.random() < _sigmoid(x))
                 if used:
                     ctx = Context(systems, gateway, person.principal, now=case["opened_ts"])
@@ -126,8 +156,15 @@ def run(log: Any = print) -> dict[str, Any]:
                     else:
                         d = prop.to_dict()
                         store.save_proposal(d)
-                        store.event(case["opened_ts"], uc, case["case_id"], case["country"], person.oid, "proposal_shown",
-                                    detail={"needs_review": prop.needs_review})
+                        store.event(
+                            case["opened_ts"],
+                            uc,
+                            case["case_id"],
+                            case["country"],
+                            person.oid,
+                            "proposal_shown",
+                            detail={"needs_review": prop.needs_review},
+                        )
                         label = _label(uc, case, t)
                         m = evals.SCORERS[uc]([(label, prop)])
                         acc_key = next(k for k in m if k.endswith("accuracy"))
@@ -148,23 +185,48 @@ def run(log: Any = print) -> dict[str, Any]:
                                 minutes = t0_min * (1 - pc["saving_when_right"][uc])
                                 escaped = True
                                 accept = True
-                        store.event(case["opened_ts"] + 60, uc, case["case_id"], case["country"], person.oid,
-                                    "accepted" if accept else "rejected",
-                                    value=float(r.uniform(0.0, 0.15) if correct else r.uniform(0.3, 0.9)))
+                        store.event(
+                            case["opened_ts"] + 60,
+                            uc,
+                            case["case_id"],
+                            case["country"],
+                            person.oid,
+                            "accepted" if accept else "rejected",
+                            value=float(r.uniform(0.0, 0.15) if correct else r.uniform(0.3, 0.9)),
+                        )
                         if accept:
                             for a in d["actions"]:
                                 who = approver[uc] if a["role"] else person.principal
                                 try:
                                     token = approvals.approve(a["action_id"], who)
                                     if token:
-                                        execute(a["action_id"], a["payload"], token, systems, approvals,
-                                                now=case["opened_ts"] + 120)
-                                        store.event(case["opened_ts"] + 120, uc, case["case_id"], case["country"],
-                                                    who.oid, "action_executed", value=a.get("amount"),
-                                                    detail={"kind": a["kind"], "approved_by_role": a["role"]})
+                                        execute(
+                                            a["action_id"],
+                                            a["payload"],
+                                            token,
+                                            systems,
+                                            approvals,
+                                            now=case["opened_ts"] + 120,
+                                        )
+                                        store.event(
+                                            case["opened_ts"] + 120,
+                                            uc,
+                                            case["case_id"],
+                                            case["country"],
+                                            who.oid,
+                                            "action_executed",
+                                            value=a.get("amount"),
+                                            detail={"kind": a["kind"], "approved_by_role": a["role"]},
+                                        )
                                 except PermissionError:
-                                    store.event(case["opened_ts"] + 120, uc, case["case_id"], case["country"],
-                                                who.oid, "approval_refused")
+                                    store.event(
+                                        case["opened_ts"] + 120,
+                                        uc,
+                                        case["case_id"],
+                                        case["country"],
+                                        who.oid,
+                                        "approval_refused",
+                                    )
                 if not used:
                     manual_ok = bool(r.random() >= cfg["manual_error"][uc])
                 wrong_outcome = escaped or (manual_ok is False)
@@ -172,33 +234,79 @@ def run(log: Any = print) -> dict[str, Any]:
                 observed = minutes * math.exp(r.normal(0, pc["crm_noise_sd"]))
                 if r.random() < pc["left_open_share"]:
                     observed *= float(r.uniform(3, 10))
-                worklog.append({"case_id": case["case_id"], "user_oid": person.oid, "use_case": uc,
-                                "country": case["country"], "week": week, "minutes": round(observed, 1),
-                                "closed_ts": case["opened_ts"] + int(observed * 60), "reopened": reopened})
-                rows.append({"case_id": case["case_id"], "use_case": uc, "country": case["country"], "week": week,
-                             "user": person.oid, "trained": person.trained, "eligible": eligible, "used": used,
-                             "correct": correct, "caught": caught, "escaped": escaped, "manual_ok": manual_ok,
-                             "complexity": complexity, "t0_min": t0_min, "minutes": minutes,
-                             "observed_min": observed, "over_eur": over_eur, "trust_after": person.trust})
+                worklog.append(
+                    {
+                        "case_id": case["case_id"],
+                        "user_oid": person.oid,
+                        "use_case": uc,
+                        "country": case["country"],
+                        "week": week,
+                        "minutes": round(observed, 1),
+                        "closed_ts": case["opened_ts"] + int(observed * 60),
+                        "reopened": reopened,
+                    }
+                )
+                rows.append(
+                    {
+                        "case_id": case["case_id"],
+                        "use_case": uc,
+                        "country": case["country"],
+                        "week": week,
+                        "user": person.oid,
+                        "trained": person.trained,
+                        "eligible": eligible,
+                        "used": used,
+                        "correct": correct,
+                        "caught": caught,
+                        "escaped": escaped,
+                        "manual_ok": manual_ok,
+                        "complexity": complexity,
+                        "t0_min": t0_min,
+                        "minutes": minutes,
+                        "observed_min": observed,
+                        "over_eur": over_eur,
+                        "trust_after": person.trust,
+                    }
+                )
         store.commit()
     systems.log_work(worklog)
     write_directory()
     (settings.TRUTH / "deployment.json").write_text(json.dumps(rows))
-    (settings.TRUTH / "people.json").write_text(json.dumps(
-        [{"oid": p.oid, "function": p.function, "country": p.country, "speed": p.speed, "trained": p.trained,
-          "trust": p.trust} for team in staff.values() for p in team]))
+    (settings.TRUTH / "people.json").write_text(
+        json.dumps(
+            [
+                {
+                    "oid": p.oid,
+                    "function": p.function,
+                    "country": p.country,
+                    "speed": p.speed,
+                    "trained": p.trained,
+                    "trust": p.trust,
+                }
+                for team in staff.values()
+                for p in team
+            ]
+        )
+    )
     calls = gateway.calls
     used = sum(x["used"] for x in rows)
-    summary = {"cases": len(rows), "used": used, "model_calls": len(calls),
-               "llm_cost_eur": round(sum(c["cost_eur"] for c in calls), 3)}
+    summary = {
+        "cases": len(rows),
+        "used": used,
+        "model_calls": len(calls),
+        "llm_cost_eur": round(sum(c["cost_eur"] for c in calls), 3),
+    }
     log(f"deployment: {summary}")
     return summary
 
 
 def kit_users(staff: dict[str, list[Person]]) -> list[dict[str, Any]]:
     """The people directory the kit may see (who is in which team and country, who was trained)."""
-    return [{"oid": p.oid, "function": p.function, "country": p.country, "trained": p.trained}
-            for team in staff.values() for p in team]
+    return [
+        {"oid": p.oid, "function": p.function, "country": p.country, "trained": p.trained}
+        for team in staff.values()
+        for p in team
+    ]
 
 
 def write_directory() -> None:

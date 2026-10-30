@@ -132,9 +132,12 @@ def dispute_email(
         for it in items:
             lines.append(
                 FUZZY["en"].format(
-                    day=it["local_day"], time=it["local_time"], evse=it["evse_id"],
+                    day=it["local_day"],
+                    time=it["local_time"],
+                    evse=it["evse_id"],
                     ref=f" (CDR {it['cdr_id']})" if it["cdr_id"] else "",
-                    claim=CLAIMS[it["claim"]]["en"], amount=amount_text(it["claimed"], "en", r),
+                    claim=CLAIMS[it["claim"]]["en"],
+                    amount=amount_text(it["claimed"], "en", r),
                 )
             )
     elif style == "hub":
@@ -349,7 +352,9 @@ def ticket_text(
     amt = f"{amount:.2f}".replace(".", ",") if lang not in ("en",) and r.random() < 0.6 else f"{amount:.2f}"
     body = [
         TICKET[kind][lang].format(
-            amount=amt, shown=(f"{shown:.2f}" if shown is not None else ""), app=app or "",
+            amount=amt,
+            shown=(f"{shown:.2f}" if shown is not None else ""),
+            app=app or "",
         )
     ]
     if kind != "unidentifiable":

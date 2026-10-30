@@ -33,8 +33,11 @@ def score_disputes(pairs: list[tuple[dict[str, Any], Proposal]]) -> dict[str, An
         for e in lab["expected"]:
             g = by_id.get(e["cdr_id"])
             if g is None:  # match by position among items not found by id
-                rest = [k for k, x in enumerate(got) if k not in used and x.get("cdr_id") not in
-                        {y["cdr_id"] for y in lab["expected"]}]
+                rest = [
+                    k
+                    for k, x in enumerate(got)
+                    if k not in used and x.get("cdr_id") not in {y["cdr_id"] for y in lab["expected"]}
+                ]
                 g = got[rest[0]] if rest else None
                 if rest:
                     used.add(rest[0])
@@ -145,14 +148,20 @@ def score_tenders(pairs: list[tuple[dict[str, Any], Proposal]]) -> dict[str, Any
             unsupported += p.decision == "answer"
         else:
             has = p.decision == "answer" and (e["value"] in text or (e.get("value_it") or "\0") in text)
-            used_stale = p.decision == "answer" and any(v in text for v in e["stale_values"]
-                                                        if v not in (e["value"], e.get("value_it")))
+            used_stale = p.decision == "answer" and any(
+                v in text for v in e["stale_values"] if v not in (e["value"], e.get("value_it"))
+            )
             stale += used_stale
             good = has and not used_stale
         answered += p.decision == "answer"
         ok += good
-    return {"questions": n, "answer_accuracy": ok / max(1, n), "answered_share": answered / max(1, n),
-            "stale_value_used": stale, "unsupported_answers": unsupported}
+    return {
+        "questions": n,
+        "answer_accuracy": ok / max(1, n),
+        "answered_share": answered / max(1, n),
+        "stale_value_used": stale,
+        "unsupported_answers": unsupported,
+    }
 
 
 SCORERS: dict[str, Callable[[list[tuple[dict[str, Any], Proposal]]], dict[str, Any]]] = {

@@ -22,8 +22,16 @@ COMUNI = [
     ("Modena", "MO", "41121", 44.6471, 10.9252),
     ("Trento", "TN", "38121", 46.0748, 11.1217),
 ]
-VIE = ["Via Emilia", "Viale Lombardia", "Strada Statale 11", "Via dell'Industria", "Corso Europa", "Via Autostrada",
-       "Area di Servizio Brianza Nord", "Via Monte Rosa"]
+VIE = [
+    "Via Emilia",
+    "Viale Lombardia",
+    "Strada Statale 11",
+    "Via dell'Industria",
+    "Corso Europa",
+    "Via Autostrada",
+    "Area di Servizio Brianza Nord",
+    "Via Monte Rosa",
+]
 CONNECTOR_WORDS = {
     "IEC_62196_T2_COMBO": ["CCS2", "CCS", "Combo 2", "CCS Combo"],
     "IEC_62196_T2": ["Tipo 2", "Type 2", "Mennekes", "T2"],
@@ -32,7 +40,9 @@ CONNECTOR_WORDS = {
 WEEKDAYS_IT = ["lun", "mar", "mer", "gio", "ven", "sab", "dom"]
 
 
-def build(net: Network, n: int, stream: str, prefix: str = "RRN") -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+def build(
+    net: Network, n: int, stream: str, prefix: str = "RRN"
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     """Returns (export rows, protocol documents, truth per site)."""
     cfg = net.cfg["site_onboarding"]
     d = cfg["defects"]
@@ -53,21 +63,38 @@ def build(net: Network, n: int, stream: str, prefix: str = "RRN") -> tuple[list[
             kw = int(r.choice([50, 150, 300]))
             n_ccs = int(r.integers(2, 5))
             for _ in range(n_ccs):
-                connectors.append({"standard": "IEC_62196_T2_COMBO", "format": "CABLE", "power_type": "DC",
-                                   "max_electric_power": kw * 1000})
+                connectors.append(
+                    {
+                        "standard": "IEC_62196_T2_COMBO",
+                        "format": "CABLE",
+                        "power_type": "DC",
+                        "max_electric_power": kw * 1000,
+                    }
+                )
             if r.random() < 0.25:
-                connectors.append({"standard": "CHADEMO", "format": "CABLE", "power_type": "DC",
-                                   "max_electric_power": 50000})
+                connectors.append(
+                    {"standard": "CHADEMO", "format": "CABLE", "power_type": "DC", "max_electric_power": 50000}
+                )
         if not dc or r.random() < 0.4:
             for _ in range(int(r.integers(1, 3))):
-                connectors.append({"standard": "IEC_62196_T2", "format": "SOCKET", "power_type": "AC_3_PHASE",
-                                   "max_electric_power": 22000})
+                connectors.append(
+                    {
+                        "standard": "IEC_62196_T2",
+                        "format": "SOCKET",
+                        "power_type": "AC_3_PHASE",
+                        "max_electric_power": 22000,
+                    }
+                )
         h24 = r.random() < 0.6
-        hours = {"twentyfourseven": True} if h24 else {
-            "twentyfourseven": False,
-            "regular_hours": [{"weekday": k, "period_begin": "07:00", "period_end": "22:00"} for k in range(1, 6)]
-            + [{"weekday": 6, "period_begin": "08:00", "period_end": "20:00"}],
-        }
+        hours = (
+            {"twentyfourseven": True}
+            if h24
+            else {
+                "twentyfourseven": False,
+                "regular_hours": [{"weekday": k, "period_begin": "07:00", "period_end": "22:00"} for k in range(1, 6)]
+                + [{"weekday": 6, "period_begin": "08:00", "period_end": "20:00"}],
+            }
+        )
         card = dc and r.random() >= d["no_card_terminal"]
         defects = {k: bool(r.random() < p) for k, p in d.items()}
         if not dc:
@@ -89,6 +116,7 @@ def build(net: Network, n: int, stream: str, prefix: str = "RRN") -> tuple[list[
             "card_payment": bool(card or not dc),
         }
         truth.append({"site_code": code, "location": loc, "needs_person": needs, "defects": defects})
+
         # --- how it was written down
         def num(x: float, nd: int = 5, *, defect: bool = defects["comma_decimal"]) -> str:
             s = f"{x:.{nd}f}"
@@ -101,16 +129,20 @@ def build(net: Network, n: int, stream: str, prefix: str = "RRN") -> tuple[list[
             groups[key] = groups.get(key, 0) + 1
         parts = []
         for (std, kw), n in groups.items():
-            word = CONNECTOR_WORDS[std][int(r.integers(len(CONNECTOR_WORDS[std])))] if defects[
-                "connector_synonym"] else {"IEC_62196_T2_COMBO": "CCS2", "IEC_62196_T2": "Tipo 2",
-                                            "CHADEMO": "CHAdeMO"}[std]
+            word = (
+                CONNECTOR_WORDS[std][int(r.integers(len(CONNECTOR_WORDS[std])))]
+                if defects["connector_synonym"]
+                else {"IEC_62196_T2_COMBO": "CCS2", "IEC_62196_T2": "Tipo 2", "CHADEMO": "CHAdeMO"}[std]
+            )
             listed_kw = kw
             if defects["conflicting_power"] and std == "IEC_62196_T2_COMBO":
                 listed_kw = int(r.choice([22, 40]))
             parts.append(f"{n}x {word} {listed_kw}kW")
         max_kw = max(c["max_electric_power"] for c in connectors) // 1000
         if h24:
-            orari = ["24 ore", "H24", "sempre aperto", "24/7"][int(r.integers(4))] if defects["free_text_hours"] else "24/7"
+            orari = (
+                ["24 ore", "H24", "sempre aperto", "24/7"][int(r.integers(4))] if defects["free_text_hours"] else "24/7"
+            )
         else:
             orari = "lun-ven 07:00-22:00, sab 08:00-20:00" if defects["free_text_hours"] else "L-V 07-22; S 08-20"
         pay = "POS contactless, app, RFID" if card else ("app, RFID" if dc else "app, RFID, POS")

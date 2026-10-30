@@ -45,8 +45,12 @@ def did(df: pl.DataFrame, countries: list[str] | None = None, col: str = "y") ->
     """Group-time ATTs with not-yet-treated controls, aggregated by case counts."""
     cells = df.group_by("country", "week").agg(y=pl.col(col).mean(), n=pl.len(), launch=pl.col("launch").first())
     if countries is not None:
-        cells = pl.concat([cells.filter(pl.col("country") == c).with_columns(country=pl.lit(f"{c}#{k}"))
-                           for k, c in enumerate(countries)])
+        cells = pl.concat(
+            [
+                cells.filter(pl.col("country") == c).with_columns(country=pl.lit(f"{c}#{k}"))
+                for k, c in enumerate(countries)
+            ]
+        )
     y = {(r["country"], r["week"]): r["y"] for r in cells.iter_rows(named=True)}
     n = {(r["country"], r["week"]): r["n"] for r in cells.iter_rows(named=True)}
     launch = {r["country"]: r["launch"] for r in cells.iter_rows(named=True)}
@@ -111,8 +115,12 @@ def its(df: pl.DataFrame, col: str = "y") -> dict[str, Any] | None:
         return None
     diff = float(post[col].mean() - pre[col].mean())
     se = float(np.sqrt(post[col].var() / post.height + pre[col].var() / pre.height))
-    return {"att_log": diff, "ci_log": [diff - 1.96 * se, diff + 1.96 * se], "pre_cases": pre.height,
-            "post_cases": post.height}
+    return {
+        "att_log": diff,
+        "ci_log": [diff - 1.96 * se, diff + 1.96 * se],
+        "pre_cases": pre.height,
+        "post_cases": post.height,
+    }
 
 
 def report(systems: Systems, store: KitStore) -> dict[str, Any]:
@@ -127,7 +135,9 @@ def report(systems: Systems, store: KitStore) -> dict[str, Any]:
             naive = float(live.filter(pl.col("used"))["y"].mean() - live.filter(~pl.col("used"))["y"].mean())
         res: dict[str, Any] = {"usage_share_live": usage, "naive_log": naive}
         countries = df["country"].n_unique()
-        baseline = float(df.filter(~pl.col("live"))["minutes"].median() or 0.0) if df.filter(~pl.col("live")).height else None
+        baseline = (
+            float(df.filter(~pl.col("live"))["minutes"].median() or 0.0) if df.filter(~pl.col("live")).height else None
+        )
         res["baseline_minutes_median"] = baseline
         staggered = countries > 1 and len(set(rollout(uc).values())) > 1
         levels = did(df, col="m") if staggered else its(df, col="m")

@@ -75,15 +75,25 @@ class Approvals:
         if decision == "approved":
             token_id = uuid.uuid4().hex
             body = {
-                "tid": token_id, "aid": approval_id, "act": action_id, "h": a["payload_hash"],
-                "by": approver.oid, "exp": ts + self.cfg["token_ttl_minutes"] * 60,
+                "tid": token_id,
+                "aid": approval_id,
+                "act": action_id,
+                "h": a["payload_hash"],
+                "by": approver.oid,
+                "exp": ts + self.cfg["token_ttl_minutes"] * 60,
             }
             raw = json.dumps(body, sort_keys=True).encode()
             sig = hmac.new(_secret(), raw, hashlib.sha256).digest()
             token = f"{_b64(raw)}.{_b64(sig)}"
         self.store.record_approval(
-            {"approval_id": approval_id, "action_id": action_id, "approver": approver.oid, "decided_ts": ts,
-             "decision": decision, "token_id": token_id}
+            {
+                "approval_id": approval_id,
+                "action_id": action_id,
+                "approver": approver.oid,
+                "decided_ts": ts,
+                "decision": decision,
+                "token_id": token_id,
+            }
         )
         self.store.set_action_status(action_id, decision)
         return token

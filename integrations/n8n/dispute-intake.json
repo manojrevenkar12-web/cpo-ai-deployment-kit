@@ -1,0 +1,79 @@
+{
+  "name": "Roaming disputes: proposal to the finance channel",
+  "nodes": [
+    {
+      "parameters": {"pollTimes": {"item": [{"mode": "everyMinute"}]}, "output": "simple",
+                     "filters": {"foldersToInclude": ["Roaming Disputes"]}},
+      "id": "a1f0c2d4-0001-4000-8000-000000000001",
+      "name": "Dispute email arrives",
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "credentials": {"microsoftOutlookOAuth2Api": {"id": "outlook-shared-mailbox", "name": "Roaming mailbox"}}
+    },
+    {
+      "parameters": {"method": "GET", "url": "={{ $env.CPOKIT_API }}/v1/cases",
+                     "sendQuery": true,
+                     "queryParameters": {"parameters": [{"name": "use_case", "value": "cdr_disputes"}]},
+                     "authentication": "genericCredentialType", "genericAuthType": "oAuth2Api"},
+      "id": "a1f0c2d4-0002-4000-8000-000000000002",
+      "name": "Find the case",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 0],
+      "credentials": {"oAuth2Api": {"id": "entra-kit-api", "name": "Kit API (Entra ID, signed-in user)"}}
+    },
+    {
+      "parameters": {"method": "POST",
+                     "url": "={{ $env.CPOKIT_API }}/v1/cases/{{ $json.case_id }}/propose",
+                     "authentication": "genericCredentialType", "genericAuthType": "oAuth2Api"},
+      "id": "a1f0c2d4-0003-4000-8000-000000000003",
+      "name": "Get the proposal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 0],
+      "credentials": {"oAuth2Api": {"id": "entra-kit-api", "name": "Kit API (Entra ID, signed-in user)"}}
+    },
+    {
+      "parameters": {"conditions": {"boolean": [{"value1": "={{ $json.needs_review }}", "value2": true}]}},
+      "id": "a1f0c2d4-0004-4000-8000-000000000004",
+      "name": "Needs a closer look?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [720, 0]
+    },
+    {
+      "parameters": {"resource": "channelMessage", "teamId": "={{ $env.FINANCE_TEAM_ID }}",
+                     "channelId": "={{ $env.DISPUTES_CHANNEL_ID }}",
+                     "messageType": "html",
+                     "message": "=<b>{{ $json.case_id }}</b> needs a closer look: {{ $json.review_reasons.join('; ') }}"},
+      "id": "a1f0c2d4-0005-4000-8000-000000000005",
+      "name": "Post for review",
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [960, -120],
+      "credentials": {"microsoftTeamsOAuth2Api": {"id": "teams-bot", "name": "Teams"}}
+    },
+    {
+      "parameters": {"resource": "channelMessage", "teamId": "={{ $env.FINANCE_TEAM_ID }}",
+                     "channelId": "={{ $env.DISPUTES_CHANNEL_ID }}",
+                     "messageType": "html",
+                     "message": "=<b>{{ $json.case_id }}</b>: {{ $json.decision }}, {{ $json.detail.total_credit_eur }} EUR. Approve in the desk or the approval card."},
+      "id": "a1f0c2d4-0006-4000-8000-000000000006",
+      "name": "Post the proposal",
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [960, 120],
+      "credentials": {"microsoftTeamsOAuth2Api": {"id": "teams-bot", "name": "Teams"}}
+    }
+  ],
+  "connections": {
+    "Dispute email arrives": {"main": [[{"node": "Find the case", "type": "main", "index": 0}]]},
+    "Find the case": {"main": [[{"node": "Get the proposal", "type": "main", "index": 0}]]},
+    "Get the proposal": {"main": [[{"node": "Needs a closer look?", "type": "main", "index": 0}]]},
+    "Needs a closer look?": {"main": [[{"node": "Post for review", "type": "main", "index": 0}],
+                                      [{"node": "Post the proposal", "type": "main", "index": 0}]]}
+  },
+  "settings": {"executionOrder": "v1"},
+  "active": false
+}

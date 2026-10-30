@@ -12,8 +12,11 @@ from .. import settings
 
 def new(use_case: str, name: str, function: str, owner: str, root: Path | None = None) -> list[Path]:
     base = root or settings.ROOT
-    env = Environment(loader=FileSystemLoader(settings.ROOT / "templates" / "usecase"), undefined=StrictUndefined,
-                      keep_trailing_newline=True)
+    env = Environment(
+        loader=FileSystemLoader(settings.ROOT / "templates" / "usecase"),
+        undefined=StrictUndefined,
+        keep_trailing_newline=True,
+    )
     values = {"id": use_case, "name": name, "function": function, "owner": owner}
     targets = {
         "spec.yaml.j2": base / "config" / "usecases" / f"{use_case}.yaml",

@@ -11,8 +11,17 @@ from pydantic import BaseModel, Field
 VERSION = "2026-10-30.1"
 
 Claim = Literal["price", "peak", "twice", "idle", "vat", "energy", "unknown", "other"]
-Intent = Literal["no_energy", "double_capture", "preauth_hold", "stuck_session", "price_display", "roaming_driver",
-                 "valid_charge", "unidentifiable", "other"]
+Intent = Literal[
+    "no_energy",
+    "double_capture",
+    "preauth_hold",
+    "stuck_session",
+    "price_display",
+    "roaming_driver",
+    "valid_charge",
+    "unidentifiable",
+    "other",
+]
 
 
 class DisputeRef(BaseModel):

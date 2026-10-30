@@ -52,15 +52,33 @@ class KitStore:
     def save_proposal(self, p: dict[str, Any]) -> None:
         self.db.execute(
             "insert or replace into proposals values (?,?,?,?,?,?,?,?,?)",
-            (p["proposal_id"], p["case_id"], p["use_case"], p["country"], p["created_ts"], p["prepared_by"],
-             p["decision"], int(p["needs_review"]), json.dumps(p, ensure_ascii=False, default=str)),
+            (
+                p["proposal_id"],
+                p["case_id"],
+                p["use_case"],
+                p["country"],
+                p["created_ts"],
+                p["prepared_by"],
+                p["decision"],
+                int(p["needs_review"]),
+                json.dumps(p, ensure_ascii=False, default=str),
+            ),
         )
         for a in p.get("actions", []):
             self.db.execute(
                 "insert or replace into actions values (?,?,?,?,?,?,?,?,?,?)",
-                (a["action_id"], p["proposal_id"], p["case_id"], a["kind"], a.get("amount"),
-                 json.dumps(a["payload"], ensure_ascii=False, sort_keys=True), a["payload_hash"], a.get("role"),
-                 a.get("status", "proposed"), p["created_ts"]),
+                (
+                    a["action_id"],
+                    p["proposal_id"],
+                    p["case_id"],
+                    a["kind"],
+                    a.get("amount"),
+                    json.dumps(a["payload"], ensure_ascii=False, sort_keys=True),
+                    a["payload_hash"],
+                    a.get("role"),
+                    a.get("status", "proposed"),
+                    p["created_ts"],
+                ),
             )
         self.db.commit()
 
@@ -72,7 +90,9 @@ class KitStore:
         sql, args = "select payload from proposals", ()
         if use_case:
             sql, args = sql + " where use_case=?", (use_case,)
-        return [json.loads(r["payload"]) for r in self.rows(sql + f" order by created_ts desc limit {int(limit)}", args)]
+        return [
+            json.loads(r["payload"]) for r in self.rows(sql + f" order by created_ts desc limit {int(limit)}", args)
+        ]
 
     def action(self, action_id: str) -> dict[str, Any] | None:
         r = self.rows("select * from actions where action_id=?", (action_id,))
@@ -103,8 +123,17 @@ class KitStore:
         return cur.rowcount == 1
 
     # usage
-    def event(self, ts: int, use_case: str, case_id: str, country: str, user: str, event: str,
-              value: float | None = None, detail: dict[str, Any] | None = None) -> None:
+    def event(
+        self,
+        ts: int,
+        use_case: str,
+        case_id: str,
+        country: str,
+        user: str,
+        event: str,
+        value: float | None = None,
+        detail: dict[str, Any] | None = None,
+    ) -> None:
         self.db.execute(
             "insert into usage_events (ts, use_case, case_id, country, user_oid, event, value, detail) "
             "values (?,?,?,?,?,?,?,?)",

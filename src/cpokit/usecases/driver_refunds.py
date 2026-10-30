@@ -73,40 +73,77 @@ def find_session(ctx: Context, read: dict[str, Any], opened_ts: int, pol: dict[s
 
 def decide(ctx: Context, session: dict[str, Any], opened_ts: int, pol: dict[str, Any]) -> dict[str, Any]:
     sys = ctx.systems
-    ev = [Evidence("session", {k: session[k] for k in ("session_id", "evse_id", "start_ts", "stop_ts", "token")},
-                   f"csms:session/{session['session_id']}")]
+    ev = [
+        Evidence(
+            "session",
+            {k: session[k] for k in ("session_id", "evse_id", "start_ts", "stop_ts", "token")},
+            f"csms:session/{session['session_id']}",
+        )
+    ]
     if any(session["token"].startswith(t) for t in pol["roaming_tokens"]):
-        return {"action": "redirect_emsp", "amount": 0.0, "evidence": ev,
-                "why": f"paid through {session['token'].split(':', 1)[1]}, which bills the driver"}
+        return {
+            "action": "redirect_emsp",
+            "amount": 0.0,
+            "evidence": ev,
+            "why": f"paid through {session['token'].split(':', 1)[1]}, which bills the driver",
+        }
     pays = sys.payments_for_session(session["session_id"])
-    ev.append(Evidence("payments", [{k: p[k] for k in ("type", "amount", "ts")} for p in pays],
-                       f"payments:session/{session['session_id']}"))
+    ev.append(
+        Evidence(
+            "payments",
+            [{k: p[k] for k in ("type", "amount", "ts")} for p in pays],
+            f"payments:session/{session['session_id']}",
+        )
+    )
     captures = [p for p in pays if p["type"] == "capture"]
     preauth = [p for p in pays if p["type"] == "preauth"]
     released = [p for p in pays if p["type"] == "release"]
     energy_kwh = (session["meter_stop_wh"] - session["meter_start_wh"]) / 1000
     if len(captures) > 1:
-        return {"action": "refund", "amount": round(sum(c["amount"] for c in captures[1:]), 2), "evidence": ev,
-                "why": "the payment was captured more than once"}
+        return {
+            "action": "refund",
+            "amount": round(sum(c["amount"] for c in captures[1:]), 2),
+            "evidence": ev,
+            "why": "the payment was captured more than once",
+        }
     if captures and energy_kwh < pol["no_energy_kwh"]:
-        return {"action": "refund", "amount": round(captures[0]["amount"], 2), "evidence": ev,
-                "why": f"only {energy_kwh:.2f} kWh were delivered"}
+        return {
+            "action": "refund",
+            "amount": round(captures[0]["amount"], 2),
+            "evidence": ev,
+            "why": f"only {energy_kwh:.2f} kWh were delivered",
+        }
     if preauth and not released:
         age = (opened_ts - preauth[0]["ts"]) / DAY
         if age >= pol["preauth_release_days"]:
-            return {"action": "escalate_payments", "amount": 0.0, "evidence": ev,
-                    "why": f"the card hold is {age:.0f} days old and was not released"}
-        return {"action": "explain", "amount": 0.0, "evidence": ev,
-                "why": f"the card hold is released by the bank within {pol['preauth_release_days']} days"}
+            return {
+                "action": "escalate_payments",
+                "amount": 0.0,
+                "evidence": ev,
+                "why": f"the card hold is {age:.0f} days old and was not released",
+            }
+        return {
+            "action": "explain",
+            "amount": 0.0,
+            "evidence": ev,
+            "why": f"the card hold is released by the bank within {pol['preauth_release_days']} days",
+        }
     statuses = sys.status_events(session["evse_id"], session["start_ts"], session["stop_ts"])
     unplugged = [s for s in statuses if s["error_code"] == "CableUnplugged" and s["ts"] < session["stop_ts"] - 600]
     if unplugged and captures:
         fair = billing.rerate(sys, session, stop_ts=unplugged[0]["ts"])
         if fair:
-            ev.append(Evidence("cable unplugged while the session ran", unplugged[0]["ts"],
-                               f"csms:status/{session['evse_id']}"))
-            return {"action": "refund", "amount": round(captures[0]["amount"] - fair["total_cost_incl_vat"], 2),
-                    "evidence": ev, "why": "billed after the cable was unplugged"}
+            ev.append(
+                Evidence(
+                    "cable unplugged while the session ran", unplugged[0]["ts"], f"csms:status/{session['evse_id']}"
+                )
+            )
+            return {
+                "action": "refund",
+                "amount": round(captures[0]["amount"] - fair["total_cost_incl_vat"], 2),
+                "evidence": ev,
+                "why": "billed after the cable was unplugged",
+            }
     shown = next((p["shown_price_per_kwh"] for p in preauth if p["shown_price_per_kwh"] is not None), None)
     rated = billing.rerate(sys, session)
     if shown is not None and rated is not None:
@@ -115,8 +152,12 @@ def decide(ctx: Context, session: dict[str, Any], opened_ts: int, pol: dict[str,
         if tariff and shown < tariff["energy"] - 1e-6:
             amount = rated["total_energy_kwh"] * (tariff["energy"] - shown) * (1 + rated["vat_rate"])
             ev.append(Evidence("price shown on the terminal", shown, f"payments:preauth/{session['session_id']}"))
-            return {"action": "refund", "amount": round(amount, 2), "evidence": ev,
-                    "why": "charged above the price shown before charging"}
+            return {
+                "action": "refund",
+                "amount": round(amount, 2),
+                "evidence": ev,
+                "why": "charged above the price shown before charging",
+            }
     return {"action": "explain", "amount": 0.0, "evidence": ev, "why": "the charge matches the tariff"}
 
 
@@ -154,34 +195,73 @@ def run(case: dict[str, Any], ctx: Context) -> Proposal:
     actions = []
     if action == "refund":
         role = pol["approval_role"] if amount > pol["approval_above_eur"] else None
-        actions.append(Action("refund", {"case_id": case["case_id"], "session_id": session["session_id"],
-                                         "amount_eur": amount, "reason": outcome["why"]}, role=role, amount=amount))
+        actions.append(
+            Action(
+                "refund",
+                {
+                    "case_id": case["case_id"],
+                    "session_id": session["session_id"],
+                    "amount_eur": amount,
+                    "reason": outcome["why"],
+                },
+                role=role,
+                amount=amount,
+            )
+        )
     elif action == "escalate_payments":
-        actions.append(Action("escalate", {"case_id": case["case_id"], "team": "payments",
-                                           "session_id": session["session_id"]}, role=None))
+        actions.append(
+            Action(
+                "escalate",
+                {"case_id": case["case_id"], "team": "payments", "session_id": session["session_id"]},
+                role=None,
+            )
+        )
     draft = None
     try:
-        rep = ctx.gateway.call("ticket.reply", {"language": read.get("language", t["lang"]),
-                                                "outcome": [f"{action}: {amount:.2f} EUR" if amount else action,
-                                                            outcome["why"]]})
+        rep = ctx.gateway.call(
+            "ticket.reply",
+            {
+                "language": read.get("language", t["lang"]),
+                "outcome": [f"{action}: {amount:.2f} EUR" if amount else action, outcome["why"]],
+            },
+        )
         results.append(rep)
         draft = rep.output
     except GatewayError as e:
         reasons.append(f"no reply draft: {e}")
     return Proposal(
-        case_id=case["case_id"], use_case=USE_CASE, country=case["country"], decision=action,
-        detail={"amount_eur": round(amount, 2), "session_id": session["session_id"] if session else None,
-                "found_by": how, "why": outcome["why"], "read": read},
-        evidence=evidence, actions=actions, draft=draft, needs_review=bool(reasons), review_reasons=reasons,
-        model_calls=ctx.calls(results), quarantined=quarantined, prepared_by=ctx.principal.oid,
+        case_id=case["case_id"],
+        use_case=USE_CASE,
+        country=case["country"],
+        decision=action,
+        detail={
+            "amount_eur": round(amount, 2),
+            "session_id": session["session_id"] if session else None,
+            "found_by": how,
+            "why": outcome["why"],
+            "read": read,
+        },
+        evidence=evidence,
+        actions=actions,
+        draft=draft,
+        needs_review=bool(reasons),
+        review_reasons=reasons,
+        model_calls=ctx.calls(results),
+        quarantined=quarantined,
+        prepared_by=ctx.principal.oid,
         created_ts=ctx.now or case["opened_ts"],
     )
 
 
 EXPECTED = {
-    "no_energy": {"refund"}, "double_capture": {"refund"}, "preauth_hold": {"explain", "escalate_payments"},
-    "stuck_session": {"refund"}, "price_display": {"refund"}, "roaming_driver": {"redirect_emsp"},
-    "valid_charge": {"explain"}, "unidentifiable": {"ask_info"},
+    "no_energy": {"refund"},
+    "double_capture": {"refund"},
+    "preauth_hold": {"explain", "escalate_payments"},
+    "stuck_session": {"refund"},
+    "price_display": {"refund"},
+    "roaming_driver": {"redirect_emsp"},
+    "valid_charge": {"explain"},
+    "unidentifiable": {"ask_info"},
 }
 
 

@@ -1,0 +1,328 @@
+{
+ "swagger": "2.0",
+ "info": {
+  "title": "CPO AI deployment kit",
+  "version": "1.0.0",
+  "description": "Proposals with evidence, approvals and usage for the operator's back-office use cases."
+ },
+ "host": "cpo-ai-kit.example.azurecontainerapps.io",
+ "basePath": "/",
+ "schemes": [
+  "https"
+ ],
+ "consumes": [
+  "application/json"
+ ],
+ "produces": [
+  "application/json"
+ ],
+ "paths": {
+  "/v1/use-cases": {
+   "get": {
+    "operationId": "ListUseCases",
+    "summary": "Use cases and their go-live status",
+    "description": "Use cases and their go-live status",
+    "parameters": [],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "type": "array",
+       "title": "Response Listusecases",
+       "items": {
+        "type": "object"
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/cases": {
+   "get": {
+    "operationId": "ListCases",
+    "summary": "Open cases of a use case in your scope",
+    "description": "Open cases of a use case in your scope",
+    "parameters": [
+     {
+      "name": "use_case",
+      "in": "query",
+      "required": true,
+      "type": "string"
+     },
+     {
+      "name": "week",
+      "in": "query",
+      "required": false,
+      "type": "integer"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "type": "array",
+       "title": "Response Listcases",
+       "items": {
+        "type": "object"
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/cases/{case_id}/propose": {
+   "post": {
+    "operationId": "ProposeForCase",
+    "summary": "Run the use case on a case; returns a proposal, executes nothing",
+    "description": "Run the use case on a case; returns a proposal, executes nothing",
+    "parameters": [
+     {
+      "name": "case_id",
+      "in": "path",
+      "required": true,
+      "type": "string"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "type": "object",
+       "title": "Response Proposeforcase"
+      }
+     }
+    }
+   }
+  },
+  "/v1/proposals/{proposal_id}": {
+   "get": {
+    "operationId": "GetProposal",
+    "summary": "Proposal",
+    "description": "Proposal",
+    "parameters": [
+     {
+      "name": "proposal_id",
+      "in": "path",
+      "required": true,
+      "type": "string"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "type": "object",
+       "title": "Response Getproposal"
+      }
+     }
+    }
+   }
+  },
+  "/v1/actions/{action_id}/approve": {
+   "post": {
+    "operationId": "ApproveAction",
+    "summary": "Approve an action (needs its role; not the preparer)",
+    "description": "Approve an action (needs its role; not the preparer)",
+    "parameters": [
+     {
+      "name": "action_id",
+      "in": "path",
+      "required": true,
+      "type": "string"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "type": "object",
+       "title": "Response Approveaction"
+      }
+     }
+    }
+   }
+  },
+  "/v1/actions/{action_id}/reject": {
+   "post": {
+    "operationId": "RejectAction",
+    "summary": "Reject",
+    "description": "Reject",
+    "parameters": [
+     {
+      "name": "action_id",
+      "in": "path",
+      "required": true,
+      "type": "string"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "type": "object",
+       "title": "Response Rejectaction"
+      }
+     }
+    }
+   }
+  },
+  "/v1/usage": {
+   "post": {
+    "operationId": "RecordUsage",
+    "summary": "Record that a person accepted or rejected a proposal",
+    "description": "Record that a person accepted or rejected a proposal",
+    "parameters": [
+     {
+      "name": "body",
+      "in": "body",
+      "required": true,
+      "schema": {
+       "$ref": "#/definitions/Usage"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "type": "object",
+       "title": "Response Recordusage"
+      }
+     }
+    }
+   }
+  },
+  "/v1/metrics/{name}": {
+   "get": {
+    "operationId": "GetMetrics",
+    "summary": "adoption, impact or evaluation report",
+    "description": "adoption, impact or evaluation report",
+    "parameters": [
+     {
+      "name": "name",
+      "in": "path",
+      "required": true,
+      "type": "string"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "title": "Response Getmetrics",
+       "type": "object"
+      }
+     }
+    }
+   }
+  }
+ },
+ "definitions": {
+  "Execute": {
+   "type": "object",
+   "title": "Execute",
+   "properties": {
+    "payload": {
+     "type": "object",
+     "title": "Payload"
+    },
+    "approval_token": {
+     "type": "string",
+     "title": "Approval Token"
+    }
+   },
+   "required": [
+    "payload",
+    "approval_token"
+   ]
+  },
+  "HTTPValidationError": {
+   "type": "object",
+   "title": "HTTPValidationError",
+   "properties": {
+    "detail": {
+     "type": "array",
+     "title": "Detail",
+     "items": {
+      "$ref": "#/definitions/ValidationError"
+     }
+    }
+   }
+  },
+  "Usage": {
+   "type": "object",
+   "title": "Usage",
+   "properties": {
+    "case_id": {
+     "type": "string",
+     "title": "Case Id"
+    },
+    "event": {
+     "type": "string",
+     "title": "Event"
+    },
+    "value": {
+     "type": "number",
+     "x-nullable": true
+    }
+   },
+   "required": [
+    "case_id",
+    "event"
+   ]
+  },
+  "ValidationError": {
+   "type": "object",
+   "title": "ValidationError",
+   "properties": {
+    "loc": {
+     "type": "array",
+     "title": "Location",
+     "items": {
+      "type": "string",
+      "x-nullable": true
+     }
+    },
+    "msg": {
+     "type": "string",
+     "title": "Message"
+    },
+    "type": {
+     "type": "string",
+     "title": "Error Type"
+    },
+    "input": {
+     "title": "Input",
+     "type": "object"
+    },
+    "ctx": {
+     "type": "object",
+     "title": "Context"
+    }
+   },
+   "required": [
+    "loc",
+    "msg",
+    "type"
+   ]
+  }
+ },
+ "securityDefinitions": {
+  "oauth2-auth": {
+   "type": "oauth2",
+   "flow": "accessCode",
+   "authorizationUrl": "https://login.microsoftonline.com/contoso-cpo.example/oauth2/v2.0/authorize",
+   "tokenUrl": "https://login.microsoftonline.com/contoso-cpo.example/oauth2/v2.0/token",
+   "scopes": {
+    "api://cpo-ai-deployment-kit/user_impersonation": "Act as the signed-in user"
+   }
+  }
+ },
+ "security": [
+  {
+   "oauth2-auth": [
+    "api://cpo-ai-deployment-kit/user_impersonation"
+   ]
+  }
+ ]
+}

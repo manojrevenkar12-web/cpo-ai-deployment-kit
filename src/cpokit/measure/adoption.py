@@ -43,13 +43,18 @@ def report(systems: Systems, store: KitStore) -> dict[str, Any]:
         e = ev.filter(pl.col("use_case") == uc)
         shown = e.filter(pl.col("event") == "proposal_shown").select("case_id", "user_oid").unique()
         decided = e.filter(pl.col("event").is_in(["accepted", "rejected"]))
-        w = w.join(shown.with_columns(used=pl.lit(True)).select("case_id", "used"), on="case_id", how="left") \
-            .with_columns(pl.col("used").fill_null(False))
+        w = w.join(
+            shown.with_columns(used=pl.lit(True)).select("case_id", "used"), on="case_id", how="left"
+        ).with_columns(pl.col("used").fill_null(False))
         weekly = (
             w.filter(pl.col("live"))
             .group_by("week")
-            .agg(cases=pl.len(), used=pl.col("used").sum(), users=pl.col("user_oid").n_unique(),
-                 active=pl.col("user_oid").filter(pl.col("used")).n_unique())
+            .agg(
+                cases=pl.len(),
+                used=pl.col("used").sum(),
+                users=pl.col("user_oid").n_unique(),
+                active=pl.col("user_oid").filter(pl.col("used")).n_unique(),
+            )
             .sort("week")
             .with_columns(usage_share=pl.col("used") / pl.col("cases"))
         )
@@ -59,8 +64,8 @@ def report(systems: Systems, store: KitStore) -> dict[str, Any]:
         by_training = (
             w.filter(pl.col("live"))
             .join(team.select(pl.col("oid").alias("user_oid"), "trained"), on="user_oid", how="left")
-            .group_by("trained").agg(people=pl.col("user_oid").n_unique(), cases=pl.len(),
-                                     usage_share=pl.col("used").mean())
+            .group_by("trained")
+            .agg(people=pl.col("user_oid").n_unique(), cases=pl.len(), usage_share=pl.col("used").mean())
             .sort("trained")
         )
         last = int(w["week"].max())

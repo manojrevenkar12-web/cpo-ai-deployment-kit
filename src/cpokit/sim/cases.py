@@ -12,7 +12,12 @@ from .. import settings
 from . import texts
 from .world import DAY, Network, Session, at, bill, iso, local, rng
 
-PARTNER_APPS = {"VOLTPASS": "Voltpass", "LADEFREUND": "Ladefreund", "PLUGPILOT": "PlugPilot", "LADDKOMPIS": "Laddkompis"}
+PARTNER_APPS = {
+    "VOLTPASS": "Voltpass",
+    "LADEFREUND": "Ladefreund",
+    "PLUGPILOT": "PlugPilot",
+    "LADDKOMPIS": "Laddkompis",
+}
 
 
 @dataclass
@@ -99,24 +104,54 @@ def disputes(net: Network, book: Book, weeks: range, stream: str) -> None:
             subject, body = texts.dispute_email(partner, items, r, injection)
             eid = f"MAIL-{stream}-{n_email:05d}"
             book.emails.append(
-                {"email_id": eid, "from": f"roaming@{partner['id'].lower()}.example", "partner_id": partner["id"],
-                 "subject": subject, "body": body, "received_ts": arrive, "lang": partner["lang"]}
+                {
+                    "email_id": eid,
+                    "from": f"roaming@{partner['id'].lower()}.example",
+                    "partner_id": partner["id"],
+                    "subject": subject,
+                    "body": body,
+                    "received_ts": arrive,
+                    "lang": partner["lang"],
+                }
             )
-            complexity = min(1.0, 0.15 * (k - 1) + (0.35 if partner["style"] in ("fuzzy", "hub") else 0.0)
-                             + float(np.mean([t["difficulty"] for t in truths])))
+            complexity = min(
+                1.0,
+                0.15 * (k - 1)
+                + (0.35 if partner["style"] in ("fuzzy", "hub") else 0.0)
+                + float(np.mean([t["difficulty"] for t in truths])),
+            )
             case_id = f"D-{eid}"
             book.cases.append(
-                {"case_id": case_id, "use_case": "cdr_disputes", "ref": eid, "country": "DE",
-                 "opened_ts": arrive, "week": w}
+                {
+                    "case_id": case_id,
+                    "use_case": "cdr_disputes",
+                    "ref": eid,
+                    "country": "DE",
+                    "opened_ts": arrive,
+                    "week": w,
+                }
             )
             book.truth.append(
-                {"case_id": case_id, "use_case": "cdr_disputes", "complexity": round(complexity, 3),
-                 "injection": injection, "items": truths}
+                {
+                    "case_id": case_id,
+                    "use_case": "cdr_disputes",
+                    "complexity": round(complexity, 3),
+                    "injection": injection,
+                    "items": truths,
+                }
             )
 
 
-DIFFICULTY = {"no_error": 0.25, "tariff_version": 0.35, "peak_window": 0.45, "duplicate": 0.2, "idle_fault": 0.3,
-              "vat_rate": 0.2, "energy_mismatch": 0.35, "unknown_session": 0.15}
+DIFFICULTY = {
+    "no_error": 0.25,
+    "tariff_version": 0.35,
+    "peak_window": 0.45,
+    "duplicate": 0.2,
+    "idle_fault": 0.3,
+    "vat_rate": 0.2,
+    "energy_mismatch": 0.35,
+    "unknown_session": 0.15,
+}
 
 
 def _driver_session(net: Network, r: np.random.Generator, start: int, partner: str, *, site=None, kind=None, **kw):
@@ -153,8 +188,9 @@ def _dispute_item(net, book, partner, arrive, r, cfg, policy) -> tuple[dict[str,
             tz_start = local(s.start, net.sites[s.site_id].tz)
             shift = (21 - tz_start.hour) * 3600 - tz_start.minute * 60 + int(r.integers(-40, 70)) * 60
             net.sessions.pop(s.session_id)
-            s = _driver_session(net, r, s.start + shift, pid, site=net.sites[s.site_id], kind="DC",
-                                energy_kwh=float(r.uniform(25, 70)))
+            s = _driver_session(
+                net, r, s.start + shift, pid, site=net.sites[s.site_id], kind="DC", energy_kwh=float(r.uniform(25, 70))
+            )
             billed, correct = bill(net, s, utc_periods=True), bill(net, s)
         elif cause == "idle_fault":
             s = _driver_session(net, r, start, pid, lock_fault=True, idle_min=float(r.uniform(45, 160)))
@@ -256,8 +292,14 @@ def tickets(net: Network, book: Book, weeks: range, stream: str) -> None:
                 tid = f"TCK-{stream}-{n:06d}"
                 t = _ticket(net, book, site, kind, arrive, r, cfg, pol, tid)
                 book.cases.append(
-                    {"case_id": f"R-{tid}", "use_case": "driver_refunds", "ref": tid, "country": cc,
-                     "opened_ts": arrive, "week": w}
+                    {
+                        "case_id": f"R-{tid}",
+                        "use_case": "driver_refunds",
+                        "ref": tid,
+                        "country": cc,
+                        "opened_ts": arrive,
+                        "week": w,
+                    }
                 )
                 book.truth.append({"case_id": f"R-{tid}", "use_case": "driver_refunds", **t})
 
@@ -341,19 +383,53 @@ def _ticket(net, book: Book, site, kind, arrive, r, cfg, pol, tid) -> dict[str, 
     if r.random() < cfg["evse_typo_share"]:
         head, num, conn = e.evse_id.rsplit("*", 2)[0], e.evse_id.split("*")[2], e.evse_id.split("*")[3]
         digits = num[1:]
-        swapped = digits[:2] + digits[3] + digits[2] if digits[2] != digits[3] else digits[:3] + str((int(digits[3]) + 1) % 10)
+        swapped = (
+            digits[:2] + digits[3] + digits[2]
+            if digits[2] != digits[3]
+            else digits[:3] + str((int(digits[3]) + 1) % 10)
+        )
         shown_evse = f"{head}*E{swapped}*{conn}"
     email, text = texts.ticket_text(
-        kind, lang, r, amount=mention, evse=shown_evse, address=site.address, city=site.city, when=when,
-        last4=last4, shown=shown, app=app, vague=vague, injection=injection,
+        kind,
+        lang,
+        r,
+        amount=mention,
+        evse=shown_evse,
+        address=site.address,
+        city=site.city,
+        when=when,
+        last4=last4,
+        shown=shown,
+        app=app,
+        vague=vague,
+        injection=injection,
     )
     book.tickets.append(
-        {"ticket_id": tid, "country": site.country, "lang": lang, "channel": "email", "from": email,
-         "text": text, "opened_ts": arrive}
+        {
+            "ticket_id": tid,
+            "country": site.country,
+            "lang": lang,
+            "channel": "email",
+            "from": email,
+            "text": text,
+            "opened_ts": arrive,
+        }
     )
-    complexity = min(1.0, {"no_energy": 0.2, "double_capture": 0.25, "preauth_hold": 0.3, "stuck_session": 0.55,
-                           "price_display": 0.5, "roaming_driver": 0.2, "valid_charge": 0.35,
-                           "unidentifiable": 0.3}[kind] + (0.3 if vague else 0.0) + float(r.uniform(-0.1, 0.1)))
+    complexity = min(
+        1.0,
+        {
+            "no_energy": 0.2,
+            "double_capture": 0.25,
+            "preauth_hold": 0.3,
+            "stuck_session": 0.55,
+            "price_display": 0.5,
+            "roaming_driver": 0.2,
+            "valid_charge": 0.35,
+            "unidentifiable": 0.3,
+        }[kind]
+        + (0.3 if vague else 0.0)
+        + float(r.uniform(-0.1, 0.1)),
+    )
     return {
         "kind": kind,
         "session_id": s.session_id if s else None,

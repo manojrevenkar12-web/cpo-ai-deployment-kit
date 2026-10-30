@@ -79,7 +79,11 @@ class Verifier:
             if key is None:
                 raise TokenError("unknown signing key")
             return jwt.decode(
-                token, key=key, algorithms=["RS256"], audience=self.audience, issuer=self.issuer,
+                token,
+                key=key,
+                algorithms=["RS256"],
+                audience=self.audience,
+                issuer=self.issuer,
                 options={"require": ["exp", "iat", "iss", "aud"]},
             )
         except jwt.PyJWTError as e:
@@ -107,12 +111,19 @@ class DevIssuer:
         jwk = RSAAlgorithm.to_jwk(self.key.public_key(), as_dict=True)
         return {"keys": [{**jwk, "kid": self.kid, "use": "sig", "alg": "RS256"}]}
 
-    def token(self, name: str, groups: list[str], *, ttl: int = 3600, audience: str | None = None,
-              oid: str | None = None) -> str:
+    def token(
+        self, name: str, groups: list[str], *, ttl: int = 3600, audience: str | None = None, oid: str | None = None
+    ) -> str:
         now = int(time.time())
         claims = {
-            "iss": self.issuer, "aud": audience or self.audience, "iat": now, "nbf": now, "exp": now + ttl,
-            "oid": oid or str(uuid.uuid5(uuid.NAMESPACE_DNS, name)), "name": name, "groups": groups,
+            "iss": self.issuer,
+            "aud": audience or self.audience,
+            "iat": now,
+            "nbf": now,
+            "exp": now + ttl,
+            "oid": oid or str(uuid.uuid5(uuid.NAMESPACE_DNS, name)),
+            "name": name,
+            "groups": groups,
             "tid": settings.access()["tenant"],
         }
         return jwt.encode(claims, self.key, algorithm="RS256", headers={"kid": self.kid})
@@ -123,6 +134,13 @@ class DevIssuer:
 
 def service_principal(name: str = "kit-service") -> Principal:
     """The kit's own identity for batch jobs (evals, the deployment simulation): all scopes, no roles."""
-    return Principal(oid=f"svc-{name}", name=name, functions=frozenset(settings.access()["use_case_functions"]
-                     and {f for fs in settings.access()["use_case_functions"].values() for f in fs}),
-                     countries=frozenset({"*"}), roles=frozenset())
+    return Principal(
+        oid=f"svc-{name}",
+        name=name,
+        functions=frozenset(
+            settings.access()["use_case_functions"]
+            and {f for fs in settings.access()["use_case_functions"].values() for f in fs}
+        ),
+        countries=frozenset({"*"}),
+        roles=frozenset(),
+    )

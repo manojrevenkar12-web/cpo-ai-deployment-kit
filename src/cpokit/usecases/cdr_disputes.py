@@ -73,25 +73,69 @@ def assess(ctx: Context, cdr: dict[str, Any], pol: dict[str, Any]) -> dict[str, 
     sys = ctx.systems
     bare = cdr["session_id"].split("HUB-")[-1]
     session = sys.session(bare)
-    ev: list[Evidence] = [Evidence("CDR as billed", {k: cdr[k] for k in (
-        "tariff_id", "total_energy_kwh", "peak_energy_kwh", "idle_minutes", "idle_cost", "vat_rate",
-        "total_cost_incl_vat")}, f"ocpi:cdr/{cdr['cdr_id']}")]
+    ev: list[Evidence] = [
+        Evidence(
+            "CDR as billed",
+            {
+                k: cdr[k]
+                for k in (
+                    "tariff_id",
+                    "total_energy_kwh",
+                    "peak_energy_kwh",
+                    "idle_minutes",
+                    "idle_cost",
+                    "vat_rate",
+                    "total_cost_incl_vat",
+                )
+            },
+            f"ocpi:cdr/{cdr['cdr_id']}",
+        )
+    ]
     if session is None:
-        return {"cause": "unknown_session", "credit": 0.0, "decision": "reject", "evidence": ev,
-                "note": "the CDR's session is not in the CSMS"}
+        return {
+            "cause": "unknown_session",
+            "credit": 0.0,
+            "decision": "reject",
+            "evidence": ev,
+            "note": "the CDR's session is not in the CSMS",
+        }
     siblings = sys.cdrs_for_session(bare)
     first = min(siblings, key=lambda c: (c["sent_ts"], c["cdr_id"]))
     if len(siblings) > 1 and first["cdr_id"] != cdr["cdr_id"]:
         ev.append(Evidence("same session already billed", first["cdr_id"], f"ocpi:cdr/{first['cdr_id']}"))
-        return {"cause": "duplicate", "credit": round(cdr["total_cost_incl_vat"], 2), "decision": "credit",
-                "evidence": ev}
+        return {
+            "cause": "duplicate",
+            "credit": round(cdr["total_cost_incl_vat"], 2),
+            "decision": "credit",
+            "evidence": ev,
+        }
     exp = billing.rerate(sys, session, peak_hours=tuple(pol["peak_hours_local"]))
     if exp is None:
-        return {"cause": "no_data", "credit": 0.0, "decision": "review", "evidence": ev,
-                "note": "meter values or tariff missing"}
-    ev.append(Evidence("re-rated from signed meter values", {k: exp[k] for k in (
-        "tariff_id", "total_energy_kwh", "peak_energy_kwh", "idle_minutes", "idle_cost", "vat_rate",
-        "total_cost_incl_vat")}, f"csms:session/{bare}"))
+        return {
+            "cause": "no_data",
+            "credit": 0.0,
+            "decision": "review",
+            "evidence": ev,
+            "note": "meter values or tariff missing",
+        }
+    ev.append(
+        Evidence(
+            "re-rated from signed meter values",
+            {
+                k: exp[k]
+                for k in (
+                    "tariff_id",
+                    "total_energy_kwh",
+                    "peak_energy_kwh",
+                    "idle_minutes",
+                    "idle_cost",
+                    "vat_rate",
+                    "total_cost_incl_vat",
+                )
+            },
+            f"csms:session/{bare}",
+        )
+    )
     causes = []
     if cdr["tariff_id"] != exp["tariff_id"]:
         causes.append("tariff_version")
@@ -106,11 +150,22 @@ def assess(ctx: Context, cdr: dict[str, Any], pol: dict[str, Any]) -> dict[str, 
         ev.append(Evidence("connector-lock fault while idle", True, f"csms:status/{session['evse_id']}"))
     credit = round(cdr["total_cost_incl_vat"] - exp["total_cost_incl_vat"], 2)
     if credit >= pol["min_credit_eur"]:
-        return {"cause": causes[0] if causes else "other", "causes": causes, "credit": credit, "decision": "credit",
-                "evidence": ev}
+        return {
+            "cause": causes[0] if causes else "other",
+            "causes": causes,
+            "credit": credit,
+            "decision": "credit",
+            "evidence": ev,
+        }
     if credit < -pol["rounding_tolerance_eur"]:
-        return {"cause": "undercharged", "causes": causes, "credit": 0.0, "decision": "reject", "evidence": ev,
-                "note": "the CDR is lower than the re-rated price"}
+        return {
+            "cause": "undercharged",
+            "causes": causes,
+            "credit": 0.0,
+            "decision": "reject",
+            "evidence": ev,
+            "note": "the CDR is lower than the re-rated price",
+        }
     return {"cause": "no_error", "causes": causes, "credit": 0.0, "decision": "reject", "evidence": ev}
 
 
@@ -125,8 +180,9 @@ def run(case: dict[str, Any], ctx: Context) -> Proposal:
     results = []
     reasons: list[str] = []
     try:
-        read = ctx.gateway.call("dispute.read", {"email": email["body"], "partner": partner["partner_id"],
-                                                 "received": received})
+        read = ctx.gateway.call(
+            "dispute.read", {"email": email["body"], "partner": partner["partner_id"], "received": received}
+        )
         results.append(read)
         refs = read.output["items"]
     except GatewayError as e:
@@ -145,9 +201,16 @@ def run(case: dict[str, Any], ctx: Context) -> Proposal:
         if cdr is None:
             unknown_id = bool(ref.get("cdr_id") or ref.get("session_ref")) and "no CDR or session" in how
             decision = "reject" if unknown_id or how.startswith("no CDR of this partner") else "ask_info"
-            items.append({"ref": ref, "cdr_id": ref.get("cdr_id"), "decision": decision,
-                          "cause": "unknown_session" if decision == "reject" else None, "credit_eur": 0.0,
-                          "note": how})
+            items.append(
+                {
+                    "ref": ref,
+                    "cdr_id": ref.get("cdr_id"),
+                    "decision": decision,
+                    "cause": "unknown_session" if decision == "reject" else None,
+                    "credit_eur": 0.0,
+                    "note": how,
+                }
+            )
             if decision == "ask_info":
                 reasons.append(f"cannot identify a disputed record: {how}")
             continue
@@ -156,25 +219,48 @@ def run(case: dict[str, Any], ctx: Context) -> Proposal:
         seen.add(cdr["cdr_id"])
         a = assess(ctx, cdr, pol)
         evidence += a["evidence"]
-        item = {"ref": ref, "cdr_id": cdr["cdr_id"], "found_by": how, "decision": a["decision"], "cause": a["cause"],
-                "credit_eur": a["credit"], "claimed_eur": ref.get("claimed_eur"), "note": a.get("note")}
+        item = {
+            "ref": ref,
+            "cdr_id": cdr["cdr_id"],
+            "found_by": how,
+            "decision": a["decision"],
+            "cause": a["cause"],
+            "credit_eur": a["credit"],
+            "claimed_eur": ref.get("claimed_eur"),
+            "note": a.get("note"),
+        }
         items.append(item)
         if a["decision"] == "review":
             reasons.append(f"{cdr['cdr_id']}: {a.get('note')}")
         if a["decision"] == "credit":
-            actions.append(Action(
-                "credit_note",
-                {"case_id": case["case_id"], "cdr_id": cdr["cdr_id"], "partner_id": partner["partner_id"],
-                 "amount_eur": a["credit"], "reason": a["cause"]},
-                role=pol["approval"]["role"], amount=a["credit"],
-            ))
+            actions.append(
+                Action(
+                    "credit_note",
+                    {
+                        "case_id": case["case_id"],
+                        "cdr_id": cdr["cdr_id"],
+                        "partner_id": partner["partner_id"],
+                        "amount_eur": a["credit"],
+                        "reason": a["cause"],
+                    },
+                    role=pol["approval"]["role"],
+                    amount=a["credit"],
+                )
+            )
         if ref.get("claimed_eur") and a["credit"] > 0 and abs(ref["claimed_eur"] - a["credit"]) > 0.5 * a["credit"] + 1:
-            reasons.append(f"{cdr['cdr_id']}: partner claims {ref['claimed_eur']:.2f} EUR, re-rating gives "
-                           f"{a['credit']:.2f} EUR")
+            reasons.append(
+                f"{cdr['cdr_id']}: partner claims {ref['claimed_eur']:.2f} EUR, re-rating gives {a['credit']:.2f} EUR"
+            )
     decisions = [
         f"{i['cdr_id'] or i['ref'].get('evse_id')}: "
-        + ({"credit": f"credit note {i['credit_eur']:.2f} EUR ({i['cause']})", "reject": f"no credit ({i['cause'] or 'not found'})",
-            "ask_info": "please send the CDR id", "review": "under review"}[i["decision"]])
+        + (
+            {
+                "credit": f"credit note {i['credit_eur']:.2f} EUR ({i['cause']})",
+                "reject": f"no credit ({i['cause'] or 'not found'})",
+                "ask_info": "please send the CDR id",
+                "review": "under review",
+            }[i["decision"]]
+        )
         for i in items
     ]
     draft = None
@@ -187,9 +273,18 @@ def run(case: dict[str, Any], ctx: Context) -> Proposal:
     total = round(sum(i["credit_eur"] for i in items), 2)
     decision = "credit" if total > 0 else ("ask_info" if any(i["decision"] == "ask_info" for i in items) else "reject")
     return Proposal(
-        case_id=case["case_id"], use_case=USE_CASE, country=case["country"], decision=decision,
+        case_id=case["case_id"],
+        use_case=USE_CASE,
+        country=case["country"],
+        decision=decision,
         detail={"partner_id": partner["partner_id"], "items": items, "total_credit_eur": total},
-        evidence=evidence, actions=actions, draft=draft, needs_review=bool(reasons), review_reasons=reasons,
-        model_calls=ctx.calls(results), quarantined=quarantined, prepared_by=ctx.principal.oid,
+        evidence=evidence,
+        actions=actions,
+        draft=draft,
+        needs_review=bool(reasons),
+        review_reasons=reasons,
+        model_calls=ctx.calls(results),
+        quarantined=quarantined,
+        prepared_by=ctx.principal.oid,
         created_ts=ctx.now or case["opened_ts"],
     )

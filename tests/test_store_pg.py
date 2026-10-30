@@ -22,7 +22,8 @@ def db():
             (f"P-{c}", f"C-{c}", c),
         )
         con.execute(
-            "insert into usage_events (ts,use_case,case_id,country,user_oid,event) values (0,'driver_refunds',%s,%s,'u','accepted')",
+            "insert into usage_events (ts,use_case,case_id,country,user_oid,event) "
+            "values (0,'driver_refunds',%s,%s,'u','accepted')",
             (f"C-{c}", c),
         )
     yield con
